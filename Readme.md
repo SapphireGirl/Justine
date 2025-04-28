@@ -1,6 +1,6 @@
 # Introduction
 ## Brief overview of the project and its goals
-- Primary purpose: Customer-facing React application that showcases Sante Fe homes for sale
+- Primary purpose: Customer-facing React application that showcases a 
 # System Architecture Overview: High-level diagram and description of architecture
 ## Main components: 
 ### React frontend
@@ -58,7 +58,7 @@ graph
 ```
 ---
 # Architecture Overview
-## Changing to an AWS microservice architecture
+## Microservice AWS microservice architecture
 
 ![image info](AWS-Microservice-Design.drawio.png)
 
