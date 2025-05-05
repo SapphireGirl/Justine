@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Justine.Server", "Justine.Server\Justine.Server.csproj", "{FD3ECB1B-B613-4674-8C75-FEEEB35C412D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.Server", "Justine.Server\Justine.Server.csproj", "{FD3ECB1B-B613-4674-8C75-FEEEB35C412D}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "justine.client", "justine.client\justine.client.esproj", "{1CD53C17-43A5-43B4-9A21-364FAA809282}"
 EndProject
@@ -11,6 +11,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		Readme.md = Readme.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.Common", "Justine.Common\Justine.Common.csproj", "{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.AWSLambdaFunctions", "Justine.AWSLambdaFunctions\Justine.AWSLambdaFunctions.csproj", "{2170B90F-0B5E-4DCE-B19E-0986E7627356}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.Lambdas", "Justine.Lambdas\Justine.Lambdas.csproj", "{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.Lambdas.Tests", "Justine.Lambdas.Tests\Justine.Lambdas.Tests.csproj", "{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,6 +36,22 @@ Global
 		{1CD53C17-43A5-43B4-9A21-364FAA809282}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1CD53C17-43A5-43B4-9A21-364FAA809282}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1CD53C17-43A5-43B4-9A21-364FAA809282}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2170B90F-0B5E-4DCE-B19E-0986E7627356}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2170B90F-0B5E-4DCE-B19E-0986E7627356}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2170B90F-0B5E-4DCE-B19E-0986E7627356}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2170B90F-0B5E-4DCE-B19E-0986E7627356}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
