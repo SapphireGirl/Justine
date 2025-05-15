@@ -7,9 +7,9 @@ public static class ServiceExtensions
 {
     public static void RegisterRepos(this IServiceCollection collection)
     {
-        collection.AddTransient<IServices<Product>, ProductServices>();
-        collection.AddTransient<IServices<Basket>, BasketServices>();
-        collection.AddTransient<IServices<Order>, OrderServices>();
+        collection.AddTransient<IProductServices, ProductServices>();
+        collection.AddTransient<IBasketServices, BasketServices>();
+        collection.AddTransient<IOrderServices, OrderServices>();
 
     }
 
