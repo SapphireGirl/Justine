@@ -1,8 +1,11 @@
 using Amazon.Lambda.Annotations;
 using Amazon.S3;
 using Amazon.DynamoDBv2;
-
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Justine.Lambdas.Extensions;
+using Justine.Common.Models;
+using Justine.Common.Services;
 
 namespace Justine.Lambdas;
 
@@ -19,10 +22,14 @@ public class Startup
     /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddTransient<IProductServices, ProductServices>();
+        services.AddTransient<IBasketServices, BasketServices>();
+        services.AddTransient<IOrderServices, OrderServices>();
+
         //// Example of creating the IConfiguration object and
         //// adding it to the dependency injection container.
-        //var builder = new ConfigurationBuilder()
-        //                    .AddJsonFile("appsettings.json", true);
+        var builder = new ConfigurationBuilder().Build();
+                            //.AddJsonFile("appsettings.json", true);
 
         //// Add AWS Systems Manager as a potential provider for the configuration. This is 
         //// available with the Amazon.Extensions.Configuration.SystemsManager NuGet package.
@@ -35,5 +42,7 @@ public class Startup
         //// the Amazon S3 service client to the dependency injection container.
         services.AddAWSService<IAmazonS3>();
         services.AddAWSService<IAmazonDynamoDB>();
+
+        
     }
 }

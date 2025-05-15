@@ -6,6 +6,7 @@ using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.DynamoDBv2;
 using Justine.Common.Models;
 using Newtonsoft.Json;
+using Justine.Common.Services;
 
 // Good DynamoDB Blog: https://www.rahulpnath.com/blog/aws-dynamodb-net-core/
 
@@ -16,13 +17,22 @@ namespace Justine.Lambdas;
 
 public class Functions
 {
-    private object _dynamoDbContext;
+    //private object _dynamoDbContext;
+    private readonly IProductServices _productServices;
+    private readonly IBasketServices _basketServices;
+    private readonly IOrderServices _orderServices;
 
     /// <summary>
     /// Default constructor that Lambda will invoke.
     /// </summary>
-    public Functions()
+    public Functions(IProductServices productServices,
+                     IBasketServices basketServices,
+                     IOrderServices orderServices)
     {
+        // These services create the IDBynamoDBContext object
+        _productServices = productServices;
+        _basketServices = basketServices;
+        _orderServices = orderServices;
     }
 
 

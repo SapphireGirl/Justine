@@ -106,7 +106,9 @@ public async Task FunctionHandler(SQSEvent evnt, ILambdaContext context)
 }
 ```
 
-### Reverting to not using Annotations
+### Reverting to not using Annotations: I am not using Annotations
+Lambdas using this
+
 If you wish to use the former style of function instead of annotations, replace the Lambda function with:
 ```
 public APIGatewayProxyResponse Get(APIGatewayProxyRequest request, ILambdaContext context)

@@ -14,11 +14,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.Common", "Justine.Common\Justine.Common.csproj", "{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.AWSLambdaFunctions", "Justine.AWSLambdaFunctions\Justine.AWSLambdaFunctions.csproj", "{2170B90F-0B5E-4DCE-B19E-0986E7627356}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.Lambdas", "Justine.Lambdas\Justine.Lambdas.csproj", "{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.Lambdas.Tests", "Justine.Lambdas.Tests\Justine.Lambdas.Tests.csproj", "{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Justine.Common.Tests", "Justine.Common.Tests\Justine.Common.Tests.csproj", "{341C503C-5570-4FA9-A08D-9C40D4E0C675}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +40,6 @@ Global
 		{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B51AA0A3-1CB2-492C-A78D-B43581D69EB3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2170B90F-0B5E-4DCE-B19E-0986E7627356}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2170B90F-0B5E-4DCE-B19E-0986E7627356}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2170B90F-0B5E-4DCE-B19E-0986E7627356}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2170B90F-0B5E-4DCE-B19E-0986E7627356}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C8F45DA-EEEC-4F8E-B75E-38C9B0F0A880}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -52,6 +48,10 @@ Global
 		{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E4E362B-56E3-4618-ADAC-2C2DA04E0E3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{341C503C-5570-4FA9-A08D-9C40D4E0C675}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{341C503C-5570-4FA9-A08D-9C40D4E0C675}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{341C503C-5570-4FA9-A08D-9C40D4E0C675}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{341C503C-5570-4FA9-A08D-9C40D4E0C675}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
