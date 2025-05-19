@@ -1,6 +1,5 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
-using Amazon.DynamoDBv2.Model;
 using Justine.Common.Exceptions;
 using Justine.Common.Models;
 using Newtonsoft.Json;
@@ -35,25 +34,7 @@ namespace Justine.Common.Services
         {
             try
             {
-                // Get the latest OrderId + 1
-                var latestOrderId = await GetNextIdAsync(order.CustomerName);
-
-                order.OrderId = latestOrderId;
-                // set up item
-                var orderToAdd = new Dictionary<string, AttributeValue>
-                {
-                    ["OrderId"] = new AttributeValue { N = order.OrderId.ToString() },
-                    ["CustomerName"] = new AttributeValue { S = order.CustomerName },
-                    ["BasketId"] = new AttributeValue { N = order.BasketId.ToString() },
-                    ["OrderDate"] = new AttributeValue { S = DateTime.UtcNow.ToString("o") }
-                };
-
-                var request = new PutItemRequest
-                {
-                    TableName = TableName,
-                    Item = orderToAdd
-                };
-
+                await _context.SaveAsync(order);
                 var response = await _context.LoadAsync<Order>(order.OrderId);
 
                 if (response == null)
@@ -68,7 +49,6 @@ namespace Justine.Common.Services
                 var orderJson = JsonConvert.SerializeObject(order);
                 throw new OrderException($"Error adding Product {orderJson} \n ERROR: {ex.Message}", ex);
             }
-
         }
 
         public async Task<Order?> UpdateOrderAsync(Order orderRequest)
@@ -142,41 +122,19 @@ namespace Justine.Common.Services
             }
         }
 
-        public async Task<int> GetNextIdAsync(string customerName)
+        public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
-            // AWSCredentials credentials, RegionEndpoint region
-            //var credentials = new BasicAWSCredentials("your-access-key", "your-secret-key");
-            //var region = RegionEndpoint.USEast1; // Change to desired region
             try
             {
-                // Define the query conditions
-                var queryConfig = new QueryOperationConfig
-                {
-                    IndexName = "CustomerName-index", // Ensure a GSI is created for CustomerName
-                    KeyExpression = new Expression
-                    {
-                        ExpressionStatement = "CustomerName = :v_customerName",
-                        ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>
-                {
-                    { ":v_customerName", customerName }
-                }
-                    },
-                    BackwardSearch = true, // Fetch the latest item first
-                    Limit = 1 // Only fetch the most recent item
-                };
+                var orders = await _context.ScanAsync<Order>(new List<ScanCondition>()).GetRemainingAsync();
+                if (orders == null) return new List<Order>();
+                return orders;
 
-                // Execute the query
-                var search = _context.FromQueryAsync<Order>(queryConfig);
-                var orders = await search.GetRemainingAsync();
-
-                // Get the latest OrderId or default to 0 if no items exist
-                var latestOrderId = orders.FirstOrDefault()?.OrderId ?? 0;
-
-                return latestOrderId + 1;
             }
             catch (Exception ex)
             {
-                throw new OrderException($"Error getting next OrderId for customer {customerName}: {ex.Message}", ex);
+                var exceptionType = ex.GetType();
+                throw new OrderException($"Error getting all Products: {exceptionType}:{ex.Message}", ex);
             }
         }
     }

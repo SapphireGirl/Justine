@@ -24,37 +24,19 @@ namespace Justine.Common.Services
         {
             try
             {
-                // set up item
-                var item = new Dictionary<string, AttributeValue>
-                {
-                    ["Name"] = new AttributeValue { S = product.Name },
-                    ["Description"] = new AttributeValue { S = product.Description },
-                    ["Price"] = new AttributeValue { N = product.Price.ToString() },
-                    ["ImageUrl"] = new AttributeValue { S = product.ImageUrl },
-                    ["Quantity"] = new AttributeValue { N = product.Quantity.ToString() },
-                    ["CreatedAt"] = new AttributeValue { S = DateTime.UtcNow.ToString("o") },
-                    ["UpdatedAt"] = new AttributeValue { S = DateTime.UtcNow.ToString("o") }
-                };
+                await _context.SaveAsync(product);
 
-                var request = new PutItemRequest
-                {
-                    TableName = TableName,
-                    Item = item
-                };
+                var returnProduct = await _context.LoadAsync<Product>(product.Id);
 
-                var response = await _context.LoadAsync<Product>(product.Id);
-
-                if (response == null)
-                {
-                    throw new ProductException($"Product with id {product.Id} not found.");
-                }
-
-                return response;
+                return returnProduct;
             }
             catch (Exception ex)
             {
+                // get type of exception
+                var exceptionType = ex.GetType();
+
                 var productJson = JsonConvert.SerializeObject(product);
-                throw new ProductException($"Error adding Product {productJson} \n ERROR: {ex.Message}", ex);
+                throw new ProductException($"Error adding Product {productJson} \n ERROR: {exceptionType}: {ex.Message}");
             }
         }
 
@@ -89,7 +71,8 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new ProductException($"Error getting all Products: {ex.Message}", ex);
+                var exceptionType = ex.GetType();
+                throw new ProductException($"Error getting all Products: {exceptionType}:{ex.Message}", ex);
             }
         }
 
@@ -108,13 +91,16 @@ namespace Justine.Common.Services
             }   
         }
 
-        public async Task<Product?> UpdateProductAsync(Product productRequest)
+        public async Task<Product> UpdateProductAsync(Product productRequest)
         {
             try
             {
                 var product = await _context.LoadAsync<Product>(productRequest.Id);
+                // check if product exists
                 if (product == null) return null;
+
                 await _context.SaveAsync(productRequest);
+
                 return productRequest;
             }
             catch (Exception ex)

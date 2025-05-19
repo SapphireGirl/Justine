@@ -23,10 +23,5 @@ namespace Justine.Common.Models
         
         [DynamoDBProperty]
         public DateTime? UpdatedAt { get; set; }
-        //public Basket(int Basket_BasketId, string Basket_CustomerName)
-        //{
-        //    BasketId = Basket_BasketId;
-        //    CustomerName = Basket_CustomerName;
-        //}
     }
 }

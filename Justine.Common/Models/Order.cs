@@ -1,9 +1,4 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Justine.Common.Models
 {
@@ -21,14 +16,5 @@ namespace Justine.Common.Models
         
         [DynamoDBProperty]
         public DateTime OrderDate { get; set; }
-
-        public Order(int Order_OrderId, string Order_CustomerName, int Order_BasketId)
-        {
-            OrderId = Order_OrderId;
-            CustomerName = Order_CustomerName;
-            BasketId = Order_BasketId;
-            OrderDate = DateTime.UtcNow;
-        }
-
     }
 }
