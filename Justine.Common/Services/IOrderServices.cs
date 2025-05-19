@@ -9,6 +9,7 @@ namespace Justine.Common.Services
         Task<Order?> UpdateOrderAsync(Order order);
         Task<bool> DeleteOrderAsync(int orderId);
         Task<IEnumerable<Order>> GetOrdersByCustomer(string customer);
+        Task<IEnumerable<Order>> GetAllOrdersAsync();
 
     }
 }

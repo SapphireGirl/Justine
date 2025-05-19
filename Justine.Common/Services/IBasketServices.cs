@@ -9,6 +9,6 @@ namespace Justine.Common.Services
         Task<Basket> AddBasketAsync(Basket basket);
         Task<Basket> UpdateBasketAsync(Basket basket);
         Task<bool> DeleteBasketAsync(int basketId);
-        Task<IEnumerable<string>> GetUsersBasketsByName(int userId, string userName);
+        Task<IEnumerable<Basket>> GetUsersBasketsByName(string customerName);
     }
 }

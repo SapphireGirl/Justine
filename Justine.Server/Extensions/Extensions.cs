@@ -20,8 +20,6 @@ public static class ServiceExtensions
 
     public static void RegisterLogging(this IServiceCollection collection)
     {
-        //collection.AddTransient<ISFLogger, SFLogger>();
-        //collection.AddSingleton<DapperContext>();
-        //collection.AddTransient<IRepository<Home>, HomeRepository>();
+
     }
 }

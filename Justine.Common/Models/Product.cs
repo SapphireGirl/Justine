@@ -29,29 +29,6 @@ namespace Justine.Common.Models
         public DateTime? CreatedAt { get; set; }
         [DynamoDBProperty] 
         public DateTime? UpdatedAt { get; set; }
-
-        //public Product(int ProductId, 
-        //               string ProductName, 
-        //               string ProductDescription, 
-        //               decimal ProductPrice, 
-        //               string ProductImageUrl, 
-        //               int ProductQuantity)
-        //{
-        //    // Name is required
-        //    if (string.IsNullOrEmpty(ProductName))
-        //    {
-        //        throw new ArgumentException("Name is required", nameof(ProductName));
-        //    }
-        //    Id = ProductId;
-        //    Name = ProductName;
-        //    Description = ProductDescription;
-        //    Price = ProductPrice;
-        //    ImageUrl = ProductImageUrl;
-        //    Quantity = ProductQuantity;
-        //    CreatedAt = DateTime.UtcNow;
-        //    UpdatedAt = DateTime.UtcNow;
-
-        //}
     }
 }
 
