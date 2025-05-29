@@ -9,6 +9,8 @@ using Justine.Common.Services;
 
 namespace Justine.Lambdas;
 
+// Notes
+// Amazon.Lambda.AspNetCoreServer.Hosting Package restore failed. Rolling back package changes for 'Justine.LambdaWebApi'
 [LambdaStartup]
 public class Startup
 {
@@ -22,9 +24,10 @@ public class Startup
     /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddTransient<IProductServices, ProductServices>();
-        services.AddTransient<IBasketServices, BasketServices>();
-        services.AddTransient<IOrderServices, OrderServices>();
+        // Singleton?
+        services.AddSingleton<IProductServices, ProductServices>();
+        services.AddSingleton<IBasketServices, BasketServices>();
+        services.AddSingleton<IOrderServices, OrderServices>();
 
         //// Example of creating the IConfiguration object and
         //// adding it to the dependency injection container.

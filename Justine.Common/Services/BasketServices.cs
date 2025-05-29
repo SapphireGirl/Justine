@@ -40,7 +40,7 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new BasketException($"Error getting all Products: {ex.Message}", ex);
+                throw new BasketException($"Error getting all Baskets: {ex.Message}", ex);
             }
         }
 
@@ -60,7 +60,7 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var basketJson = JsonConvert.SerializeObject(basket);
-                throw new BasketException($"Error adding Product {basketJson} \n ERROR: {ex.Message}", ex);
+                throw new BasketException($"Error adding Basket {basketJson} \n ERROR: {ex.Message}", ex);
             }
         }
 
@@ -98,7 +98,7 @@ namespace Justine.Common.Services
             }
         }
 
-        public async Task<IEnumerable<Basket>> GetUsersBasketsByName(string customerName)
+        public async Task<IEnumerable<Basket>> GetUsersBasketsByNameAsync(string customerName)
         {
             try
             {

@@ -22,22 +22,22 @@ namespace Justine.Common.Tests.ServicesTests
             {
                 new Basket { BasketId = 1, CustomerName = "Joe",
                     Products = new List<Product> {
-                               new Product { Id = 1, Name = "Product1", Description = "Description1", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
-                               new Product { Id = 2, Name = "Product2", Description = "Description2", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
+                               new Product { ProductId = 1, Name = "Product1", Description = "Description1", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
+                               new Product { ProductId = 2, Name = "Product2", Description = "Description2", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
                     }
                 },
                 new Basket { BasketId = 2, CustomerName = "Jane",
                     Products = new List<Product> {
-                               new Product { Id = 3, Name = "Product3", Description = "Description3", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
-                               new Product { Id = 4, Name = "Product4", Description = "Description4", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
+                               new Product { ProductId = 3, Name = "Product3", Description = "Description3", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
+                               new Product { ProductId = 4, Name = "Product4", Description = "Description4", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
                     }
                 },
                 new Basket { 
                     BasketId = 3, 
                     CustomerName = "Justine",
                     Products = new List<Product> {
-                               new Product { Id = 5, Name = "Product5", Description = "Description5", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
-                               new Product { Id = 6, Name = "Product6", Description = "Description6", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
+                               new Product { ProductId = 5, Name = "Product5", Description = "Description5", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
+                               new Product { ProductId = 6, Name = "Product6", Description = "Description6", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
                     }
                 }           
             };
@@ -48,8 +48,8 @@ namespace Justine.Common.Tests.ServicesTests
                 CustomerName = "Joe",
                 Products = new List<Product>
                 {
-                    new Product { Id = 1, Name = "Product1", Description = "Description1", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
-                    new Product { Id = 2, Name = "Product2", Description = "Description2", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
+                    new Product { ProductId = 1, Name = "Product1", Description = "Description1", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
+                    new Product { ProductId = 2, Name = "Product2", Description = "Description2", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
                 }
             };
             // Provide dummy AWS credentials
@@ -149,8 +149,8 @@ namespace Justine.Common.Tests.ServicesTests
                 CustomerName = "Justine",
                 Products = new List<Product>
                 {
-                    new Product { Id = 4, Name = "Product4", Description = "Description4", Price = 10.00M, ImageUrl = "url1", Quantity = 1 },
-                    new Product { Id = 5, Name = "Product5", Description = "Description5", Price = 20.00M, ImageUrl = "url2", Quantity = 2 }
+                    new Product { ProductId = 4, Name = "Product4", Description = "Description4", Price = 10.00M, ImageUrl = "url1", Quantity = 1 },
+                    new Product { ProductId = 5, Name = "Product5", Description = "Description5", Price = 20.00M, ImageUrl = "url2", Quantity = 2 }
                 }
             };
 
@@ -196,8 +196,8 @@ namespace Justine.Common.Tests.ServicesTests
                 CustomerName = "Joe",
                 Products = new List<Product>
                 {
-                    new Product { Id = 1, Name = "Product1", Description = "UpdatedDescription1", Price = 10.0M, ImageUrl = "url1", Quantity = 2 },
-                    new Product { Id = 2, Name = "Product2", Description = "UpdatedDescription2", Price = 20.0M, ImageUrl = "url2", Quantity = 3 }
+                    new Product { ProductId = 1, Name = "Product1", Description = "UpdatedDescription1", Price = 10.0M, ImageUrl = "url1", Quantity = 2 },
+                    new Product { ProductId = 2, Name = "Product2", Description = "UpdatedDescription2", Price = 20.0M, ImageUrl = "url2", Quantity = 3 }
                 }
             };
 
@@ -233,8 +233,8 @@ namespace Justine.Common.Tests.ServicesTests
                 CustomerName = "Joe",
                 Products = new List<Product>
                 {
-                    new Product { Id = 1, Name = "Product1", Description = "Description1", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
-                    new Product { Id = 2, Name = "Product2", Description = "Description2", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
+                    new Product { ProductId = 1, Name = "Product1", Description = "Description1", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
+                    new Product { ProductId = 2, Name = "Product2", Description = "Description2", Price = 20.0M, ImageUrl = "url2", Quantity = 2 }
                 }
             };
 
@@ -263,7 +263,7 @@ namespace Justine.Common.Tests.ServicesTests
             // Act
             // sut is OrderServices
             var basketService = new BasketServices(_mockDynamoDbContext.Object);
-            var result = await basketService.GetUsersBasketsByName("Justine");
+            var result = await basketService.GetUsersBasketsByNameAsync("Justine");
 
             // Assert
             Assert.That(result, Is.Not.Null);

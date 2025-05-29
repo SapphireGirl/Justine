@@ -26,7 +26,7 @@ namespace Justine.Common.Services
             {
                 await _context.SaveAsync(product);
 
-                var returnProduct = await _context.LoadAsync<Product>(product.Id);
+                var returnProduct = await _context.LoadAsync<Product>(product.ProductId);
 
                 return returnProduct;
             }
@@ -36,7 +36,7 @@ namespace Justine.Common.Services
                 var exceptionType = ex.GetType();
 
                 var productJson = JsonConvert.SerializeObject(product);
-                throw new ProductException($"Error adding Product {productJson} \n ERROR: {exceptionType}: {ex.Message}");
+                throw new ProductException($"Error adding Product {productJson} \n ERROR: Type {exceptionType} : {ex.Message}");
             }
         }
 
@@ -55,7 +55,8 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new ProductException($"Error deleting Product with id  {id}: {ex.Message}", ex);
+                var exceptionType = ex.GetType();
+                throw new ProductException($"Error deleting Product with id  {id}:  Type {exceptionType} : {ex.Message}", ex);
             }
         }
 
@@ -72,7 +73,7 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var exceptionType = ex.GetType();
-                throw new ProductException($"Error getting all Products: {exceptionType}:{ex.Message}", ex);
+                throw new ProductException($"Error getting all Products: Type {exceptionType} : {ex.Message}", ex);
             }
         }
 
@@ -87,7 +88,8 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new ProductException($"Error getting Product with id {id} failed: {ex.Message}", ex);
+                var exceptionType = ex.GetType();
+                throw new ProductException($"Error getting Product with id {id} failed: Type {exceptionType} : {ex.Message}");
             }   
         }
 
@@ -95,7 +97,7 @@ namespace Justine.Common.Services
         {
             try
             {
-                var product = await _context.LoadAsync<Product>(productRequest.Id);
+                var product = await _context.LoadAsync<Product>(productRequest.ProductId);
                 // check if product exists
                 if (product == null) return null;
 
@@ -105,7 +107,8 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new ProductException($"Error updating Product with id {productRequest.Id} failed: {ex.Message}", ex);
+                var exceptionType = ex.GetType();
+                throw new ProductException($"Error updating Product with id {productRequest.ProductId} failed: Type {exceptionType}: {ex.Message}");
             }
         }
 
