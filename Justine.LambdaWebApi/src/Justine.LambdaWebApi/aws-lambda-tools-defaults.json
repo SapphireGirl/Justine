@@ -8,14 +8,11 @@
   "profile": "dev",
   "region": "us-east-1",
   "configuration": "Release",
-  "s3-prefix": "Justine.Lambdas/",
+  "s3-prefix": "Justine.LambdaWebApi/",
   "template": "serverless.template",
   "template-parameters": "",
-  "docker-host-build-output-dir": "./bin/Release/lambda-publish",
-
-  "framework": "netcoreapp1.0",
-  "function-runtime": "dotnetcore1.0",
+  "function-runtime": "dotnet8",
   "function-memory-size": 256,
   "function-timeout": 30,
-  "function-handler": "ImageRekognition::ImageRekognition.Function::FunctionHandler"
+  "function-role": "arn:aws:iam::123456789012:role/lambda-role"
 }

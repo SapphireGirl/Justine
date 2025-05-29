@@ -15,16 +15,16 @@ public class FunctionsTest
     [Fact]
     public void GetProductByIdReturnsProduct()
     {
-        //var context = new TestLambdaContext();
+        var context = new TestLambdaContext();
         //var functions = new Functions();
 
-        //var request = new APIGatewayProxyRequest
-        //{
-        //    HttpMethod = "GET",
-        //    Path = "/",
-        //    Body = "{\"Id\":\"12345\"}"
-        //};
-        
+        var request = new APIGatewayProxyRequest
+        {
+            HttpMethod = "GET",
+            Path = "/",
+            Body = "{\"Id\":\"12345\"}"
+        };
+
         //var response = functions.GetProductById(request);
 
         //Assert.Equal((int)HttpStatusCode.OK, response.StatusCode);

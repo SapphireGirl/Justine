@@ -7,7 +7,7 @@ namespace Justine.Common.Models
     {
         // This is the partition key
         [DynamoDBHashKey]
-        public int Id { get; set; } // Required
+        public int ProductId { get; set; } // Required
 
         // Maps a class property to the sort key of the table's primary key
         [DynamoDBRangeKey]

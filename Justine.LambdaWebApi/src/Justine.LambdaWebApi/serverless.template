@@ -1,0 +1,399 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "An AWS Serverless Application that uses the ASP.NET Core framework running in Amazon Lambda.",
+  "Parameters": {},
+  "Conditions": {},
+  "Resources": {
+    "AspNetCoreFunction": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.LambdaEntryPoint::FunctionHandlerAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 512,
+        "Timeout": 30,
+        "Role": null,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "ProxyResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/{proxy+}",
+              "Method": "ANY"
+            }
+          },
+          "RootResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "ANY"
+            }
+          }
+        }
+      }
+    },
+    "BasketGetAllAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.BasketFunctions::GetAllBasketsAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "GetAllBasketsAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/baskets",
+              "Method": "GET"
+            }
+          }
+        }
+      }
+    },
+    "BasketGetByIdAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.BasketFunctions::GetBasketByIdAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "GetBasketByIdAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/baskets/{id}",
+              "Method": "GET"
+            }
+          }
+        }
+      }
+    },
+    "AddBasketAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.BasketFunctions::AddBasketAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "AddBasketAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/baskets",
+              "Method": "POST"
+            }
+          }
+        }
+      }
+    },
+    "DeleteBasketAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.BasketFunctions::DeleteBasketAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "DeleteBasketAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/baskets/{id}",
+              "Method": "DELETE"
+            }
+          }
+        }
+      }
+    },
+    "UpdateBasketAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.BasketFunctions::UpdateBasketAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "UpdateBasketAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/baskets/{id}",
+              "Method": "PUT"
+            }
+          }
+        }
+      }
+    },
+    "GetUsersBasketsByNameAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.BasketFunctions::GetUsersBasketsByNameAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "GetUsersBasketsByNameAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/baskets/user/{name}",
+              "Method": "GET"
+            }
+          }
+        }
+      }
+    },
+    "ProductGetAllAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.ProductFunctions::GetAllProductsAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "GetAllProductsAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/products",
+              "Method": "GET"
+            }
+          }
+        }
+      }
+    },
+    "ProductGetByIdAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.ProductFunctions::GetProductByIdAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "GetProductByIdAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/products/{id}",
+              "Method": "GET"
+            }
+          }
+        }
+      }
+    },
+    "AddProductAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.ProductFunctions::AddProductAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "AddProductAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/products",
+              "Method": "POST"
+            }
+          }
+        }
+      }
+    },
+    "DeleteProductAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.ProductFunctions::DeleteProductAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "DeleteProductAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/products/{id}",
+              "Method": "DELETE"
+            }
+          }
+        }
+      }
+    },
+    "UpdateProductAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.ProductFunctions::UpdateProductAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "UpdateProductAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/products/{id}",
+              "Method": "PUT"
+            }
+          }
+        }
+      }
+    },
+    "OrderGetAllAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.OrderFunctions::GetAllOrdersAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "GetAllOrdersAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/orders",
+              "Method": "GET"
+            }
+          }
+        }
+      }
+    },
+    "OrderGetByIdAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.OrderFunctions::GetOrderByIdAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "GetOrderByIdAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/orders/{id}",
+              "Method": "GET"
+            }
+          }
+        }
+      }
+    },
+    "AddOrderAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.OrderFunctions::AddOrderAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "AddOrderAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/orders",
+              "Method": "POST"
+            }
+          }
+        }
+      }
+    },
+    "DeleteOrderAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.OrderFunctions::DeleteOrderAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "DeleteOrderAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/orders/{id}",
+              "Method": "DELETE"
+            }
+          }
+        }
+      }
+    },
+    "UpdateOrderAsync": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.OrderFunctions::UpdateOrderAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 256,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "Events": {
+          "UpdateOrderAsyncApi": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/orders/{id}",
+              "Method": "PUT"
+            }
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ApiURL": {
+      "Description": "API endpoint URL for Prod environment",
+      "Value": {
+        "Fn::Sub": "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+      }
+    }
+  }
+}

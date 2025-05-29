@@ -20,14 +20,14 @@ namespace Justine.Common.Tests.ServicesTests
         {
             _testData = new List<Product>
             {
-                new Product { Id = 1, Name = "Product1", Description = "Description1", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
-                new Product { Id = 2, Name = "Product2", Description = "Description2", Price = 20.0M, ImageUrl = "url2", Quantity = 2 },
-                new Product { Id = 3, Name = "Product3", Description = "Description3", Price = 30.0M, ImageUrl = "url3", Quantity = 3 }
+                new Product { ProductId = 1, Name = "Product1", Description = "Description1", Price = 10.0M, ImageUrl = "url1", Quantity = 1 },
+                new Product { ProductId = 2, Name = "Product2", Description = "Description2", Price = 20.0M, ImageUrl = "url2", Quantity = 2 },
+                new Product { ProductId = 3, Name = "Product3", Description = "Description3", Price = 30.0M, ImageUrl = "url3", Quantity = 3 }
             };
 
             expectedProduct = new Product
             {
-                Id = 1,
+                ProductId = 1,
                 Name = "Product1",
                 Description = "Description1",
                 Price = 10.0M,
@@ -91,7 +91,7 @@ namespace Justine.Common.Tests.ServicesTests
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Id, Is.EqualTo(expectedProduct.Id));
+            Assert.That(result.ProductId, Is.EqualTo(expectedProduct.ProductId));
             Assert.That(result.Name, Is.EqualTo(expectedProduct.Name));
         }
 
@@ -121,13 +121,13 @@ namespace Justine.Common.Tests.ServicesTests
                 ImageUrl = "url4",
                 Quantity = 4
             };
-            newProduct.Id = 4; // Set the Id after saving
+            newProduct.ProductId = 4; // Set the Id after saving
 
             _mockDynamoDbContext
                 .Setup(x => x.SaveAsync(newProduct, default))
                 .Returns(Task.CompletedTask);
 
-            _mockDynamoDbContext.Setup(x => x.LoadAsync<Product>(newProduct.Id, default))
+            _mockDynamoDbContext.Setup(x => x.LoadAsync<Product>(newProduct.ProductId, default))
                 .ReturnsAsync(newProduct);
 
             // Act
@@ -138,7 +138,7 @@ namespace Justine.Common.Tests.ServicesTests
             // Assert
             _mockDynamoDbContext.Verify(x => x.SaveAsync(newProduct, default), Times.Once);
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Id, Is.EqualTo(4));
+            Assert.That(result.ProductId, Is.EqualTo(4));
             Assert.That(result.Name, Is.EqualTo(newProduct.Name));
             Assert.That(result.Description, Is.EqualTo(newProduct.Description));
             Assert.That(result.Price, Is.EqualTo(newProduct.Price));
@@ -185,7 +185,7 @@ namespace Justine.Common.Tests.ServicesTests
             
             // Act
             var productServices = new ProductServices(_mockDynamoDbContext.Object);
-            var result = await productServices.DeleteProductAsync(productToDelete.Id);
+            var result = await productServices.DeleteProductAsync(productToDelete.ProductId);
 
             // Assert
             _mockDynamoDbContext.Verify(x => x.DeleteAsync(It.IsAny<Product>(), default), Times.Once);
@@ -200,7 +200,7 @@ namespace Justine.Common.Tests.ServicesTests
             // Arrange
             Product updatedProduct = new Product
             {
-                Id = 1,
+                ProductId = 1,
                 Name = "UpdatedProduct",
                 Description = "UpdatedDescription",
                 Price = 15.0M,
@@ -208,7 +208,7 @@ namespace Justine.Common.Tests.ServicesTests
                 Quantity = 2
             };
             _mockDynamoDbContext
-                .Setup(x => x.LoadAsync<Product>(updatedProduct.Id, default))
+                .Setup(x => x.LoadAsync<Product>(updatedProduct.ProductId, default))
                 .ReturnsAsync(updatedProduct);
             _mockDynamoDbContext.Setup(x => x.SaveAsync(updatedProduct, default))
                 .Returns(Task.CompletedTask);
@@ -219,7 +219,7 @@ namespace Justine.Common.Tests.ServicesTests
             var result = await productServices.UpdateProductAsync(updatedProduct);
             
             // Assert
-            Assert.That(result.Id, Is.EqualTo(1));
+            Assert.That(result.ProductId, Is.EqualTo(1));
             Assert.That(result.Name, Is.EqualTo("UpdatedProduct"));
             Assert.That(result.Description, Is.EqualTo("UpdatedDescription"));
             Assert.That(result.Price, Is.EqualTo(15.0M));
