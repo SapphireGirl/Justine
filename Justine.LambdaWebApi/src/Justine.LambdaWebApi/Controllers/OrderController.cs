@@ -17,7 +17,7 @@ namespace Justine.LambdaWebApi.Controllers
             _OrderServices = OrderServices;
         }
 
-        // GET /Orders
+        // GET /orders
         [HttpGet]
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {

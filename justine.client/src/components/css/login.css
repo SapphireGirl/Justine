@@ -1,0 +1,128 @@
+html, body {
+    background-image: url('../../assets/cognito-image-background-page-light.svg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    display: flex;
+    justify-content: center;
+    align-items:center;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+}
+
+.login-page-background {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    width: 600px;
+    padding: 32px 32px 24px 32px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.10), 0 1.5px 4px rgba(0,0,0,0.08);
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.login-container form > div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+.login-container label {
+    font-size: 15px;
+    color: #37475a;
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.login-container h2 {
+    text-align: center;
+    color: #232f3e;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+.login-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.login-container label {
+    font-size: 15px;
+    color: #37475a;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    padding: 10px 12px;
+    border: 1px solid #d5dbdb;
+    border-radius: 4px;
+    font-size: 15px;
+    background: #f7fafc;
+    transition: border 0.2s;
+}
+
+.login-container input[type="text"]:focus,
+.login-container input[type="password"]:focus {
+    border: 1.5px solid #0073bb;
+    outline: none;
+    background: #fff;
+}
+
+.login-container button[type="submit"] {
+    margin-top: 10px;
+    padding: 10px 0;
+    background: #0073bb;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.login-container button[type="submit"]:hover {
+    background: #005fa3;
+}
+
+.login-container p[style] {
+    margin-top: 10px;
+    color: #d13212 !important;
+    font-size: 14px;
+    text-align: center;
+}
+
+.cognito-form-container {
+    margin: 0;
+    font-size: 24px;
+    color: #0f141a;
+    font-weight: 700;
+    line-height: 30px;
+    text-align: left;
+    padding: 0 0 16px 0;
+}
+
+.cognito-form-description {
+    margin: 0;
+    font-size: 14px;
+    color: #424650;
+    font-weight: 400;
+    line-height: 22px;
+    padding: 0 0 16px 0;
+}

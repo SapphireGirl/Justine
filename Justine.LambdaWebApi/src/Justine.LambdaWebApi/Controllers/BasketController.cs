@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Justine.LambdaWebApi.Controllers
 {
     [ApiController]
-    [Route("baskets")]
+    [Route("Baskets")]
     public class BasketController : ControllerBase
     {
         private readonly IBasketServices _basketServices;
@@ -17,7 +17,7 @@ namespace Justine.LambdaWebApi.Controllers
             _basketServices = basketServices;
         }
 
-        // GET /baskets
+        // GET Baskets/baskets
         [HttpGet]
         public async Task<IEnumerable<Basket>> GetAllBasketsAsync()
         {
@@ -50,7 +50,8 @@ namespace Justine.LambdaWebApi.Controllers
             }
         }
 
-        // POST /baskets
+        // POST Baskets/baskets
+        // check if Path is correct when posting a basket?
         [HttpPost]
         public async Task<Basket> AddBasketAsync([FromBody] Basket basket)
         {
@@ -70,7 +71,7 @@ namespace Justine.LambdaWebApi.Controllers
             }
         }
 
-        // DELETE /baskets/{id}
+        // DELETE Baskets/baskets/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBasketAsync(int basketId)
         {
@@ -95,7 +96,7 @@ namespace Justine.LambdaWebApi.Controllers
             }
         }
 
-        // PUT /baskets/{id}
+        // PUT Baskets/baskets/{id}
         [HttpPut("{id}")]
         public async Task<Basket> UpdateBasketAsync([FromBody] Basket basket)
         {

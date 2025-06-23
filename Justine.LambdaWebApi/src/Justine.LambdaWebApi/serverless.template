@@ -5,36 +5,6 @@
   "Parameters": {},
   "Conditions": {},
   "Resources": {
-    "AspNetCoreFunction": {
-      "Type": "AWS::Serverless::Function",
-      "Properties": {
-        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.LambdaEntryPoint::FunctionHandlerAsync",
-        "Runtime": "dotnet8",
-        "CodeUri": "",
-        "MemorySize": 512,
-        "Timeout": 30,
-        "Role": null,
-        "Policies": [
-          "AWSLambda_FullAccess"
-        ],
-        "Events": {
-          "ProxyResource": {
-            "Type": "Api",
-            "Properties": {
-              "Path": "/{proxy+}",
-              "Method": "ANY"
-            }
-          },
-          "RootResource": {
-            "Type": "Api",
-            "Properties": {
-              "Path": "/",
-              "Method": "ANY"
-            }
-          }
-        }
-      }
-    },
     "BasketGetAllAsync": {
       "Type": "AWS::Serverless::Function",
       "Properties": {
@@ -50,7 +20,7 @@
           "GetAllBasketsAsyncApi": {
             "Type": "Api",
             "Properties": {
-              "Path": "/baskets",
+              "Path": "Baskets/baskets",
               "Method": "GET"
             }
           }
@@ -72,7 +42,7 @@
           "GetBasketByIdAsyncApi": {
             "Type": "Api",
             "Properties": {
-              "Path": "/baskets/{id}",
+              "Path": "Baskets/baskets/{id}",
               "Method": "GET"
             }
           }
@@ -94,7 +64,7 @@
           "AddBasketAsyncApi": {
             "Type": "Api",
             "Properties": {
-              "Path": "/baskets",
+              "Path": "Baskets/baskets",
               "Method": "POST"
             }
           }
@@ -116,7 +86,7 @@
           "DeleteBasketAsyncApi": {
             "Type": "Api",
             "Properties": {
-              "Path": "/baskets/{id}",
+              "Path": "Baskets/baskets/{id}",
               "Method": "DELETE"
             }
           }
@@ -138,7 +108,7 @@
           "UpdateBasketAsyncApi": {
             "Type": "Api",
             "Properties": {
-              "Path": "/baskets/{id}",
+              "Path": "Baskets/baskets/{id}",
               "Method": "PUT"
             }
           }
@@ -160,7 +130,7 @@
           "GetUsersBasketsByNameAsyncApi": {
             "Type": "Api",
             "Properties": {
-              "Path": "/baskets/user/{name}",
+              "Path": "Baskets/baskets/user/{name}",
               "Method": "GET"
             }
           }
@@ -386,7 +356,165 @@
           }
         }
       }
+    },
+    "CreateProductTableAsync": {
+        "Type": "AWS::Serverless::Function",
+        "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.AdminFunctions.CreateProductTableAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 128,
+        "Timeout": 30,
+        "Policies": ["AWSLambdaBasicExecutionRole"
+        ],
+        "Events": {
+            "CreateProductTableAsyncApi": {
+                "Type": "Api",
+                "Properties": {
+                    "Path": "/admin/createProducts",
+                    "Method": "POST"
+                    }
+                }
+            }
+        }
+    },
+    "CreateBasketTableAsync": {
+        "Type": "AWS::Serverless::Function",
+        "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.AdminFunctions.CreateBasketTableAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 128,
+        "Timeout": 30,
+        "Policies": ["AWSLambdaBasicExecutionRole"
+        ],
+        "Events": {
+            "CreateBasketTableAsyncApi": {
+                "Type": "Api",
+                "Properties": {
+                    "Path": "/admin/createBaskets",
+                    "Method": "POST"
+                    }
+                }
+            }
+        }
+    },
+    "CreateOrderTableAsync": {
+        "Type": "AWS::Serverless::Function",
+        "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.AdminFunctions.CreateOrderTableAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 128,
+        "Timeout": 30,
+        "Policies": ["AWSLambdaBasicExecutionRole"
+        ],
+        "Events": {
+            "CreateOrderTableAsyncApi": {
+                "Type": "Api",
+                "Properties": {
+                    "Path": "/admin/createOrders",
+                    "Method": "POST"
+                    }
+                }
+            }
+        }
+    },
+    "DeleteProductTableAsync": {
+        "Type": "AWS::Serverless::Function",
+        "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.AdminFunctions.DeleteProductTableAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 128,
+        "Timeout": 30,
+        "Policies": ["AWSLambdaBasicExecutionRole"
+        ],
+        "Events": {
+            "DeleteProductTableAsyncApi": {
+                "Type": "Api",
+                "Properties": {
+                    "Path": "/admin/deleteProducts",
+                    "Method": "DELETE"
+                    }
+                }
+            }
+        }
+    },
+    "DeleteBasketTableAsync": {
+        "Type": "AWS::Serverless::Function",
+        "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.AdminFunctions.DeleteBasketTableAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 128,
+        "Timeout": 30,
+        "Policies": ["AWSLambdaBasicExecutionRole"
+        ],
+        "Events": {
+            "DeleteBasketTableAsyncApi": {
+                "Type": "Api",
+                "Properties": {
+                    "Path": "/admin/deleteBaskets",
+                    "Method": "DELETE"
+                    }
+                }
+            }
+        }
+    },
+    "DeleteOrderTableAsync": {
+        "Type": "AWS::Serverless::Function",
+        "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.AdminFunctions.DeleteOrderTableAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 128,
+        "Timeout": 30,
+        "Policies": ["AWSLambdaBasicExecutionRole"
+        ],
+        "Events": {
+            "DeleteOrderTableAsyncApi": {
+                "Type": "Api",
+                "Properties": {
+                    "Path": "/admin/deleteOrders",
+                    "Method": "DELETE"
+                    }
+                }
+            }
+        }
+    },
+    "DeleteAllLambdasAsync": {
+        "Type": "AWS::Serverless::Function",
+        "Properties": {
+        "Handler": "Justine.LambdaWebApi::Justine.LambdaWebApi.AdminFunctions.DeleteAllLambdasAsync",
+        "Runtime": "dotnet8",
+        "CodeUri": "",
+        "MemorySize": 128,
+        "Timeout": 30,
+        "Policies": ["AWSLambdaBasicExecutionRole"
+        ],
+        "Events": {
+            "DeleteAllLambdasAsyncApi": {
+                "Type": "Api",
+                "Properties": {
+                    "Path": "/admin/deleteLambdas",
+                    "Method": "DELETE"
+                    }
+                }
+            }
+        }
     }
+
+
+
+
+
+
+
+  
+  
+  
+  
   },
   "Outputs": {
     "ApiURL": {

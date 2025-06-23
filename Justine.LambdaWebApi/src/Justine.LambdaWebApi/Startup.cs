@@ -1,4 +1,6 @@
-﻿using Justine.Common.Services;
+﻿using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2;
+using Justine.Common.Services;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -18,9 +20,18 @@ namespace Justine.LambdaWebApi
         {
             services.AddControllers();
             services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
+
+            services.AddSingleton<IDynamoDBContext>(sp =>
+            {
+                var client = sp.GetRequiredService<IAmazonDynamoDB>();
+                var builder = new DynamoDBContextBuilder();
+                return builder.Build();
+            });
+
             services.AddSingleton<IProductServices, ProductServices>();
             services.AddSingleton<IBasketServices, BasketServices>();
             services.AddSingleton<IOrderServices, OrderServices>();
+
 
             // Swagger
             services.AddSwaggerGen(swagger =>
