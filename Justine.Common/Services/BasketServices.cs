@@ -10,22 +10,26 @@ namespace Justine.Common.Services
     {
         private readonly IDynamoDBContext _context;
         private const string TableName = "Baskets";
-        public BasketServices(IDynamoDBContext context) 
+        public BasketServices(IDynamoDBContext context)
         {
             _context = context;
         }
+
         public async Task<Basket> GetBasketByIdAsync(int basketId)
         {
             try
             {
                 var basket = await _context.LoadAsync<Basket>(basketId);
-                if (basket == null) return null;
+                if (basket == null)
+                {
+                    throw new BasketException($"Basket with BasketId {basketId} not found.");
+                }
 
                 return basket;
             }
             catch (Exception ex)
             {
-                throw new BasketException($"Error getting Basket with basketId {basketId} failed: {ex.Message}", ex);
+                throw new BasketException($"Error getting Basket with BasketId {basketId} failed: {ex.Message}", ex);
             }
         }
 
@@ -34,9 +38,7 @@ namespace Justine.Common.Services
             try
             {
                 var baskets = await _context.ScanAsync<Basket>(new List<ScanCondition>()).GetRemainingAsync();
-                if (baskets == null) return new List<Basket>();
-                return baskets;
-
+                return baskets ?? new List<Basket>();
             }
             catch (Exception ex)
             {
@@ -48,12 +50,13 @@ namespace Justine.Common.Services
         {
             try
             {
-
-                //The SaveAsync method creates a new Item if the primary key does not already exist. 
-                //If it exists, it will overwrite the existing item with the new item values.
                 await _context.SaveAsync<Basket>(basket);
-
                 var response = await _context.LoadAsync<Basket>(basket.BasketId);
+
+                if (response == null)
+                {
+                    throw new BasketException($"Failed to retrieve the added Basket with BasketId {basket.BasketId}.");
+                }
 
                 return response;
             }
@@ -69,16 +72,20 @@ namespace Justine.Common.Services
             try
             {
                 var basket = await _context.LoadAsync<Basket>(basketRequest.BasketId);
-                if (basket == null) return null;
+                if (basket == null)
+                {
+                    throw new BasketException($"Basket with BasketId {basketRequest.BasketId} not found.");
+                }
+
                 await _context.SaveAsync(basketRequest);
-                return basket;
+                return basketRequest;
             }
             catch (Exception ex)
             {
-                throw new BasketException($"Error updating Product with id {basketRequest.BasketId} failed: {ex.Message}", ex);
+                throw new BasketException($"Error updating Basket with BasketId {basketRequest.BasketId} failed: {ex.Message}", ex);
             }
         }
-        
+
         public async Task<bool> DeleteBasketAsync(int basketId)
         {
             try
@@ -94,7 +101,7 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new BasketException($"Error deleting Basket with BasketId  {basketId}: {ex.Message}", ex);
+                throw new BasketException($"Error deleting Basket with BasketId {basketId}: {ex.Message}", ex);
             }
         }
 
@@ -102,10 +109,9 @@ namespace Justine.Common.Services
         {
             try
             {
-                // Define the query conditions
                 var queryConfig = new QueryOperationConfig
                 {
-                    IndexName = "CustomerName-index", // Ensure a GSI is created for CustomerName
+                    IndexName = "CustomerName-index",
                     KeyExpression = new Expression
                     {
                         ExpressionStatement = "CustomerName = :v_customerName",
@@ -116,12 +122,10 @@ namespace Justine.Common.Services
                     }
                 };
 
-                // Execute the query
                 var search = _context.FromQueryAsync<Basket>(queryConfig);
                 var baskets = await search.GetRemainingAsync();
 
-                return baskets;
-
+                return baskets ?? new List<Basket>();
             }
             catch (Exception ex)
             {

@@ -3,7 +3,7 @@
 namespace Justine.Common.Models
 {
     [DynamoDBTable("Products")]
-    public class Product 
+    public class Product
     {
         // This is the partition key
         [DynamoDBHashKey]
@@ -11,26 +11,37 @@ namespace Justine.Common.Models
 
         // Maps a class property to the sort key of the table's primary key
         [DynamoDBRangeKey]
-        public string Name { get; set; }  // Required
+        private string _name = string.Empty; // Initialize to a non-null default value
 
-        // This is unnecessary, because the Attribute is also named the same as the property:
-        // If it wasn't you would use it like this[DynamoDBProperty("Authors")]
-        // public List<string> BookAuthors { get; set; }
-        // Leaving for now
-        [DynamoDBProperty] 
-        public string? Description { get; set; }
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Name cannot be null or empty because it is a DynamoDBRangeKey.");
+                }
+                _name = value;
+            }
+        }
+
+        [DynamoDBProperty]
+        public string? Description { get; set; } // Nullable, optional
+
         [DynamoDBProperty]
         public decimal Price { get; set; } // Required
+
         [DynamoDBProperty]
-        public string? ImageUrl { get; set; }
-        [DynamoDBProperty] 
-        public int Quantity { get; set; }
-        [DynamoDBProperty] 
-        public DateTime? CreatedAt { get; set; }
-        [DynamoDBProperty] 
-        public DateTime? UpdatedAt { get; set; }
+        public string? ImageUrl { get; set; } // Nullable, optional
+
+        [DynamoDBProperty]
+        public int Quantity { get; set; } // Required
+
+        [DynamoDBProperty]
+        public DateTime? CreatedAt { get; set; } // Nullable, optional
+
+        [DynamoDBProperty]
+        public DateTime? UpdatedAt { get; set; } // Nullable, optional
     }
 }
-
-
-

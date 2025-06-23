@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from 'node:url';
-
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
 import fs from 'fs';
@@ -7,13 +6,13 @@ import path from 'path';
 import child_process from 'child_process';
 import { env } from 'process';
 
-const baseFolder =
-    env.APPDATA !== undefined && env.APPDATA !== ''
-        ? `${env.APPDATA}/ASP.NET/https`
-        : `${env.HOME}/.aspnet/https`;
+const baseFolder = './ssl/'
+//    env.APPDATA !== undefined && env.APPDATA !== ''
+//        ? `${env.APPDATA}/ASP.NET/https`
+//        : `${env.HOME}/.aspnet/https`;
 
-const certificateName = "justine.client";
-const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
+const certificateName = "JustineClient";
+const certFilePath = path.join(baseFolder, `${certificateName}.crt`);
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
 
 if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
@@ -35,6 +34,7 @@ const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_H
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    
     plugins: [plugin()],
     resolve: {
         alias: {
@@ -43,7 +43,7 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
+            '^/login': {
                 target,
                 secure: false
             }
@@ -52,6 +52,6 @@ export default defineConfig({
         https: {
             key: fs.readFileSync(keyFilePath),
             cert: fs.readFileSync(certFilePath),
-        }
+        },
     }
 })

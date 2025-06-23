@@ -5,6 +5,7 @@ using Justine.Common.Models;
 using Justine.Common.Services;
 using Amazon.Runtime;
 using Amazon.DynamoDBv2.DocumentModel;
+using Justine.Common.Exceptions;
 
 namespace Justine.Common.Tests.ServicesTests
 {
@@ -114,10 +115,11 @@ namespace Justine.Common.Tests.ServicesTests
 
             // Act
             // We do not have a basket with Id 8 in our test data
-            var result = basketServices.GetBasketByIdAsync(8).Result;
+            var basketId = 8;
 
-            // Assert
-            Assert.That(result, Is.Null);
+            var ex = Assert.ThrowsAsync<BasketException>(async () =>
+                await basketServices.GetBasketByIdAsync(basketId));
+            Assert.That(ex.Message, Is.EqualTo("Error getting Basket with BasketId 8 failed: Basket with BasketId 8 not found."));
         }
 
         [Test]

@@ -17,7 +17,7 @@ namespace Justine.LambdaWebApi.Controllers
             _productServices = productServices;
         }
 
-        // GET /Products
+        // GET /products
         [HttpGet]
         public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {

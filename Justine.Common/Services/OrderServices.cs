@@ -9,7 +9,6 @@ namespace Justine.Common.Services
     public class OrderServices : IOrderServices
     {
         private readonly IDynamoDBContext _context;
-        private const string TableName = "Orders";
         public OrderServices(IDynamoDBContext context)
         {
             _context = context;
@@ -19,14 +18,12 @@ namespace Justine.Common.Services
         {
             try
             {
-                var order = await _context.LoadAsync<Order>(orderId);
-                if (order == null) return null;
-
+                var order = await _context.LoadAsync<Order>(orderId) ?? throw new OrderException($"Order with OrderId {orderId} not found.");
                 return order;
             }
             catch (Exception ex)
             {
-                throw new OrderException($"Error getting Product with id {orderId} failed: {ex.Message}", ex);
+                throw new OrderException($"Error getting Order with id {orderId} failed: {ex.Message}", ex);
             }
         }
 
@@ -35,36 +32,27 @@ namespace Justine.Common.Services
             try
             {
                 await _context.SaveAsync(order);
-                var response = await _context.LoadAsync<Order>(order.OrderId);
-
-                if (response == null)
-                {
-                    throw new OrderException($"Product with id {order.OrderId} not found.");
-                }
-
+                var response = await _context.LoadAsync<Order>(order.OrderId) ?? throw new OrderException($"Order with id {order.OrderId} not found.");
                 return response;
             }
             catch (Exception ex)
             {
                 var orderJson = JsonConvert.SerializeObject(order);
-                throw new OrderException($"Error adding Product {orderJson} \n ERROR: {ex.Message}", ex);
+                throw new OrderException($"Error adding Order {orderJson} \n ERROR: {ex.Message}", ex);
             }
         }
 
-        public async Task<Order?> UpdateOrderAsync(Order orderRequest)
+        public async Task<Order> UpdateOrderAsync(Order orderRequest)
         {
             try
             {
-                var order = await _context.LoadAsync<Order>(orderRequest.OrderId);
-                if (order == null) return null;
-                
-                await _context.SaveAsync(order);
-                
-                return order;
+                var order = await _context.LoadAsync<Order>(orderRequest.OrderId) ?? throw new OrderException($"Order with OrderId {orderRequest.OrderId} not found.");
+                await _context.SaveAsync(orderRequest);
+                return orderRequest;
             }
             catch (Exception ex)
             {
-                throw new ProductException($"Error updating Product with id {orderRequest.OrderId} failed: {ex.Message}", ex);
+                throw new OrderException($"Error updating Order with id {orderRequest.OrderId} failed: {ex.Message}", ex);
             }
         }
 
@@ -72,18 +60,13 @@ namespace Justine.Common.Services
         {
             try
             {
-                var order = await _context.LoadAsync<Order>(orderId);
-                if (order == null)
-                {
-                    throw new OrderException($"Order with OrderId {orderId} not found.");
-                }
-
+                var order = await _context.LoadAsync<Order>(orderId) ?? throw new OrderException($"Order with OrderId {orderId} not found.");
                 await _context.DeleteAsync(order);
                 return true;
             }
             catch (Exception ex)
             {
-                throw new OrderException($"Error deleting Order with OrderId  {orderId}: {ex.Message}", ex);
+                throw new OrderException($"Error deleting Order with OrderId {orderId}: {ex.Message}", ex);
             }
         }
 
@@ -91,14 +74,9 @@ namespace Justine.Common.Services
         {
             try
             {
-                // Query table using just the sort key
-                // Do I need to setup a Global Secondary Index (GSI) for this?
-                // Yes
-               
-                // Define the query conditions
                 var queryConfig = new QueryOperationConfig
                 {
-                    IndexName = "CustomerName-index", // Ensure a GSI is created for CustomerName
+                    IndexName = "CustomerName-index",
                     KeyExpression = new Expression
                     {
                         ExpressionStatement = "CustomerName = :v_customerName",
@@ -109,12 +87,10 @@ namespace Justine.Common.Services
                     }
                 };
 
-                // Execute the query
                 var search = _context.FromQueryAsync<Order>(queryConfig);
                 var orders = await search.GetRemainingAsync();
 
-                return orders;
-                
+                return orders ?? [];
             }
             catch (Exception ex)
             {
@@ -134,7 +110,7 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var exceptionType = ex.GetType();
-                throw new OrderException($"Error getting all Products: {exceptionType}:{ex.Message}", ex);
+                throw new OrderException($"Error getting all Orders: {exceptionType}:{ex.Message}", ex);
             }
         }
     }

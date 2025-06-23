@@ -74,6 +74,10 @@ DynamoDB throttling occurs when the number of read or write requests exceeds the
 ## How to Handle Throttling Issues
 1. **Use Exponential Backoff**: Implement an exponential backoff strategy in your application to retry failed requests after a delay. This means that if a request fails due to throttling, you wait for a short period before retrying, and if it fails again, you increase the wait time exponentially.
 2. **Use DynamoDB Streams**: Enable DynamoDB Streams on your table to capture changes to items in the table. This allows you to process changes asynchronously and can help reduce the load on your main table.
-3.  
+
+
+## DNS
+- Use Route 53 to manage DNS for your application
+- justine-developer.net $100/3 years
 
 

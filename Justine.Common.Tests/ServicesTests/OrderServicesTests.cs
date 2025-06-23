@@ -5,21 +5,22 @@ using Justine.Common.Models;
 using Justine.Common.Services;
 using Amazon.Runtime;
 using Amazon.DynamoDBv2.DocumentModel;
+using Justine.Common.Exceptions;
 
 namespace Justine.Common.Tests.ServicesTests
 {
     [TestFixture]
     public class OrderServicesTests
     {
-        private List<Order> _testData;
-        private Mock<IDynamoDBContext> _mockDynamoDbContext;
+        private List<Order>? _testData;
+        private Mock<IDynamoDBContext>? _mockDynamoDbContext;
         private Order expectedOrder;
 
         [SetUp]
         public void Setup()
         {
-            _testData = new List<Order>
-            {
+            _testData =
+            [
                 // OrderId, CustomerName, OrderId
                 new Order
                 {
@@ -38,7 +39,7 @@ namespace Justine.Common.Tests.ServicesTests
                     CustomerName = "Justine", 
                     BasketId = 3 
                 }
-            };
+            ];
 
             expectedOrder = new Order
             {
@@ -94,7 +95,6 @@ namespace Justine.Common.Tests.ServicesTests
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.OrderId, Is.EqualTo(expectedOrder.OrderId));
-            Assert.That(result.OrderId, Is.EqualTo(expectedOrder.OrderId));
             Assert.That(result.CustomerName, Is.EqualTo(expectedOrder.CustomerName));
         }
 
@@ -107,10 +107,11 @@ namespace Justine.Common.Tests.ServicesTests
             // SUT is OrderServices
             // We do not have a Order with Id 8 in our test data
             var orderServices = new OrderServices(_mockDynamoDbContext.Object);
-            var result = await orderServices.GetOrderByIdAsync(8);
+            var orderId = 8;
 
-            // Assert
-            Assert.That(result, Is.Null);
+            var ex = Assert.ThrowsAsync<OrderException>(async () =>
+                await orderServices.GetOrderByIdAsync(orderId));
+            Assert.That(ex.Message, Is.EqualTo("Error getting Order with id 8 failed: Order with OrderId 8 not found."));
         }
 
         [Test]
@@ -152,7 +153,7 @@ namespace Justine.Common.Tests.ServicesTests
         {
             // Arrange
 
-            Order updatedOrder = new Order
+            Order updatedOrder = new()
             {
                 OrderId = 1,
                 CustomerName = "Joe",
@@ -183,7 +184,7 @@ namespace Justine.Common.Tests.ServicesTests
         public async Task DeleteOrder_DeletesOrder()
         {
             // Arrange
-            Order OrderToDelete = new Order
+            Order OrderToDelete = new()
             {
                 OrderId = 1,
                 CustomerName = "Joe",
