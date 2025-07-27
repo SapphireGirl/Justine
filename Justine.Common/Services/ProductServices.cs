@@ -36,6 +36,14 @@ namespace Justine.Common.Services
                 var exceptionType = ex.GetType();
 
                 var productJson = JsonConvert.SerializeObject(product);
+
+                // To get the inner exception and stack trace for more detailed error information
+                
+                if (ex.ToString() != null)
+                {
+                    throw new ProductException($"Error adding Product {productJson} \n ERROR: Type {exceptionType} : {ex.ToString()}");
+                }
+
                 throw new ProductException($"Error adding Product {productJson} \n ERROR: Type {exceptionType} : {ex.Message}");
             }
         }
@@ -56,7 +64,14 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var exceptionType = ex.GetType();
-                throw new ProductException($"Error deleting Product with id  {id}:  Type {exceptionType} : {ex.Message}", ex);
+
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new ProductException($"Error deleting Product with id {id}: Type {exceptionType} : {ex.ToString()}");
+                }
+
+                throw new ProductException($"Error deleting Product with id  {id}:  Type {exceptionType} : {ex.Message}");
             }
         }
 
@@ -73,7 +88,14 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var exceptionType = ex.GetType();
-                throw new ProductException($"Error getting all Products: Type {exceptionType} : {ex.Message}", ex);
+
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new ProductException($"Error getting all Products: Type {exceptionType} : {ex.ToString()}");
+                }
+
+                throw new ProductException($"Error getting all Products: Type {exceptionType} : {ex.Message}");
             }
         }
 
@@ -89,6 +111,13 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var exceptionType = ex.GetType();
+
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new ProductException($"Error getting Product with id {id} failed: Type {exceptionType} : {ex.ToString()}");
+                }
+
                 throw new ProductException($"Error getting Product with id {id} failed: Type {exceptionType} : {ex.Message}");
             }   
         }
@@ -108,6 +137,13 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var exceptionType = ex.GetType();
+
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new ProductException($"Error updating Product with id {productRequest.ProductId} failed: Type {exceptionType}: {ex.ToString()}");
+                }
+
                 throw new ProductException($"Error updating Product with id {productRequest.ProductId} failed: Type {exceptionType}: {ex.Message}");
             }
         }
@@ -124,10 +160,14 @@ namespace Justine.Common.Services
         /// <returns>A Boolean value indicating the success of the operation.</returns>
         public static async Task<bool> CreateProductTableAsync(AmazonDynamoDBClient client, string tableName)
         {
-            var response = await client.CreateTableAsync(new CreateTableRequest
+            try
             {
-                TableName = tableName,
-                AttributeDefinitions = new List<AttributeDefinition>()
+
+
+                var response = await client.CreateTableAsync(new CreateTableRequest
+                {
+                    TableName = tableName,
+                    AttributeDefinitions = new List<AttributeDefinition>()
                 {
                     new AttributeDefinition
                     {
@@ -140,7 +180,7 @@ namespace Justine.Common.Services
                         AttributeType = ScalarAttributeType.N,
                     },
                 },
-                KeySchema = new List<KeySchemaElement>()
+                    KeySchema = new List<KeySchemaElement>()
                 {
                     new KeySchemaElement
                     {
@@ -153,33 +193,44 @@ namespace Justine.Common.Services
                         KeyType = KeyType.RANGE,
                     },
                 },
-                BillingMode = BillingMode.PAY_PER_REQUEST,
-            });
+                    BillingMode = BillingMode.PAY_PER_REQUEST,
+                });
 
-            // Wait until the table is ACTIVE and then report success.
-            Console.Write("Waiting for table to become active...");
+                // Wait until the table is ACTIVE and then report success.
+                Console.Write("Waiting for table to become active...");
 
-            var request = new DescribeTableRequest
-            {
-                TableName = response.TableDescription.TableName,
-            };
+                var request = new DescribeTableRequest
+                {
+                    TableName = response.TableDescription.TableName,
+                };
 
-            TableStatus status;
+                TableStatus status;
 
-            int sleepDuration = 2000;
+                int sleepDuration = 2000;
 
-            do
-            {
-                System.Threading.Thread.Sleep(sleepDuration);
+                do
+                {
+                    System.Threading.Thread.Sleep(sleepDuration);
 
-                var describeTableResponse = await client.DescribeTableAsync(request);
-                status = describeTableResponse.Table.TableStatus;
+                    var describeTableResponse = await client.DescribeTableAsync(request);
+                    status = describeTableResponse.Table.TableStatus;
 
-                Console.Write(".");
+                    Console.Write(".");
+                }
+                while (status != "ACTIVE");
+
+                return status == TableStatus.ACTIVE;
             }
-            while (status != "ACTIVE");
+            catch (Exception ex)
+            {
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new ProductException($"Error creating table {tableName}: {ex.ToString()}");
+                }
 
-            return status == TableStatus.ACTIVE;
+                throw new ProductException($"Error creating table {tableName}: {ex.Message}");
+            }
         }
     }
 }

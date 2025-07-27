@@ -23,7 +23,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new OrderException($"Error getting Order with id {orderId} failed: {ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new OrderException($"Error getting Order with id {orderId} failed: {ex.ToString()}");
+                }
+
+                throw new OrderException($"Error getting Order with id {orderId} failed: {ex.Message}");
             }
         }
 
@@ -38,7 +44,15 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var orderJson = JsonConvert.SerializeObject(order);
-                throw new OrderException($"Error adding Order {orderJson} \n ERROR: {ex.Message}", ex);
+
+                // To get the inner exception and stack trace for more detailed error information
+
+                if (ex.ToString() != null)
+                {
+                    throw new OrderException($"Error adding Order {orderJson} \n ERROR: {ex.ToString()}");
+                }
+
+                throw new OrderException($"Error adding Order {orderJson} \n ERROR: {ex.Message}");
             }
         }
 
@@ -52,7 +66,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new OrderException($"Error updating Order with id {orderRequest.OrderId} failed: {ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if(ex.ToString() != null)
+                {
+                    throw new OrderException($"Error updating Order with id {orderRequest.OrderId} failed: {ex.ToString()}");
+                }
+
+                throw new OrderException($"Error updating Order with id {orderRequest.OrderId} failed: {ex.Message}");
             }
         }
 
@@ -66,7 +86,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new OrderException($"Error deleting Order with OrderId {orderId}: {ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new OrderException($"Error deleting Order with OrderId {orderId}: {ex.ToString()}");
+                }
+
+                throw new OrderException($"Error deleting Order with OrderId {orderId}: {ex.Message}");
             }
         }
 
@@ -94,7 +120,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new OrderException($"Error getting Orders with customer {customerName} failed: {ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new OrderException($"Error getting Orders with customer {customerName} failed: {ex.ToString()}");
+                }
+
+                throw new OrderException($"Error getting Orders with customer {customerName} failed: {ex.Message}");
             }
         }
 
@@ -110,7 +142,13 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var exceptionType = ex.GetType();
-                throw new OrderException($"Error getting all Orders: {exceptionType}:{ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new OrderException($"Error getting all Orders: {exceptionType}:{ex.ToString()}");
+                }
+
+                throw new OrderException($"Error getting all Orders: {exceptionType}:{ex.Message}");
             }
         }
     }
