@@ -60,20 +60,24 @@ namespace Justine.Common.Services
             {
                 var response = await _dynamoDbClient.CreateTableAsync(createTableRequest);
                 Console.WriteLine($"Table '{tableName}' created successfully. Status: {response.TableDescription.TableStatus}");
+
+                // Wait for the table to become active
+                await WaitForTableToBeActiveAsync(tableName);
+
+                // Populate the table with initial data
+                await PopulateProductTableAsync(tableName);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to create table '{tableName}'. Error: {ex.Message}");
-                return;
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new AdminException($"Error creating table '{tableName}': {ex.ToString()}");
+                }
+
+                throw new AdminException($"Failed to create table '{tableName}'. Error: {ex.Message}");
             }
-
-            // Wait for the table to become active
-            await WaitForTableToBeActiveAsync(tableName);
-
-            // Populate the table with initial data
-            await PopulateProductTableAsync(tableName);
         }
-
 
         public async Task CreateBasketTableAsync()
         {
@@ -119,18 +123,23 @@ namespace Justine.Common.Services
             {
                 var response = await _dynamoDbClient.CreateTableAsync(createTableRequest);
                 Console.WriteLine($"Table '{tableName}' created successfully. Status: {response.TableDescription.TableStatus}");
+
+                // Wait for the table to become active
+                await WaitForTableToBeActiveAsync(tableName);
+
+                // Populate the table with initial data
+                await PopulateBasketTableAsync(tableName);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to create table '{tableName}'. Error: {ex.Message}");
-                return;
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new AdminException($"Error creating table '{tableName}': {ex.ToString()}");
+                }
+
+                throw new AdminException($"Failed to create table '{tableName}'. Error: {ex.Message}");
             }
-
-            // Wait for the table to become active
-            await WaitForTableToBeActiveAsync(tableName);
-
-            // Populate the table with initial data
-            await PopulateBasketTableAsync(tableName);
         }
 
         public async Task CreateOrderTableAsync()
@@ -185,18 +194,23 @@ namespace Justine.Common.Services
             {
                 var response = await _dynamoDbClient.CreateTableAsync(createTableRequest);
                 Console.WriteLine($"Table '{tableName}' created successfully. Status: {response.TableDescription.TableStatus}");
+
+                // Wait for the table to become active
+                await WaitForTableToBeActiveAsync(tableName);
+
+                // Populate the table with initial data
+                await PopulateOrderTableAsync(tableName);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to create table '{tableName}'. Error: {ex.Message}");
-                return;
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new AdminException($"Error creating table '{tableName}': {ex.ToString()}");
+                }
+
+                throw new AdminException($"Failed to create table '{tableName}'. Error: {ex.Message}");
             }
-
-            // Wait for the table to become active
-            await WaitForTableToBeActiveAsync(tableName);
-
-            // Populate the table with initial data
-            await PopulateOrderTableAsync(tableName);
         }
 
         public Task<bool> DeleteAllLambdasAsync()
@@ -231,8 +245,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to delete table '{tableName}'. Error: {ex.Message}");
-                return false;
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new AdminException($"Error deleting table '{tableName}': {ex.ToString()}");
+                }
+
+                throw new AdminException($"Failed to delete table '{tableName}'. Error: {ex.Message}");
             }
         }
 
@@ -263,8 +282,12 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to delete table '{tableName}'. Error: {ex.Message}");
-                return false;
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new AdminException($"Error deleting table '{tableName}': {ex.ToString()}");
+                }
+                throw new AdminException($"Failed to delete table '{tableName}'. Error: {ex.Message}");
             }
         }
 
@@ -295,8 +318,12 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to delete table '{tableName}'. Error: {ex.Message}");
-                return false;
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new AdminException($"Error deleting table '{tableName}': {ex.ToString()}");
+                }
+                throw new AdminException($"Failed to delete table '{tableName}'. Error: {ex.Message}");
             }
         }
 

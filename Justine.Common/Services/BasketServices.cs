@@ -29,6 +29,12 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new BasketException($"Error getting Basket with BasketId {basketId} failed: {ex.ToString()}");
+                }
+
                 throw new BasketException($"Error getting Basket with BasketId {basketId} failed: {ex.Message}", ex);
             }
         }
@@ -42,7 +48,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new BasketException($"Error getting all Baskets: {ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new BasketException($"Error getting all Baskets: {ex.ToString()}");
+                }
+
+                throw new BasketException($"Error getting all Baskets: {ex.ToString()}");
             }
         }
 
@@ -63,7 +75,12 @@ namespace Justine.Common.Services
             catch (Exception ex)
             {
                 var basketJson = JsonConvert.SerializeObject(basket);
-                throw new BasketException($"Error adding Basket {basketJson} \n ERROR: {ex.Message}", ex);
+                if (ex.ToString() != null)
+                {
+                    throw new BasketException($"Error adding Basket {basketJson} \n ERROR: {ex.ToString()}");
+                }
+
+                throw new BasketException($"Error adding Basket {basketJson} \n ERROR: {ex.Message}");
             }
         }
 
@@ -82,7 +99,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new BasketException($"Error updating Basket with BasketId {basketRequest.BasketId} failed: {ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new BasketException($"Error updating Basket with BasketId {basketRequest.BasketId} failed: {ex.ToString()}");
+                }
+
+                throw new BasketException($"Error updating Basket with BasketId {basketRequest.BasketId} failed: {ex.Message}");
             }
         }
 
@@ -101,7 +124,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new BasketException($"Error deleting Basket with BasketId {basketId}: {ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new BasketException($"Error deleting Basket with BasketId {basketId}: {ex.ToString()}");
+                }
+
+                throw new BasketException($"Error deleting Basket with BasketId {basketId}: {ex.Message}");
             }
         }
 
@@ -129,7 +158,13 @@ namespace Justine.Common.Services
             }
             catch (Exception ex)
             {
-                throw new BasketException($"Error getting all Baskets with customer Name: {customerName} {ex.Message}", ex);
+                // To get the inner exception and stack trace for more detailed error information
+                if (ex.ToString() != null)
+                {
+                    throw new BasketException($"Error getting all Baskets with customer Name: {customerName} {ex.ToString()}");
+                }
+
+                throw new BasketException($"Error getting all Baskets with customer Name: {customerName} {ex.Message}");
             }
         }
     }
