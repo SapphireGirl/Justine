@@ -3,6 +3,7 @@ using Amazon.DynamoDBv2;
 using Justine.Common.Services;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Justine.LambdaWebApi
 {
@@ -41,6 +42,13 @@ namespace Justine.LambdaWebApi
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 swagger.IncludeXmlComments(xmlPath);
             });
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = $"https://{Configuration["Auth0:Domain"]}";
+                    options.Audience = Configuration["Auth0:Audience"];
+                });
         }
 
     

@@ -1,4 +1,4 @@
-# ASP.NET Core Web API Serverless Application
+    # ASP.NET Core Web API Serverless Application
 
 This project shows how to run an ASP.NET Core Web API project as an AWS Lambda exposed through Amazon API Gateway. The NuGet package [Amazon.Lambda.AspNetCoreServer](https://www.nuget.org/packages/Amazon.Lambda.AspNetCoreServer) contains a Lambda function that is used to translate requests from API Gateway into the ASP.NET Core framework and then the responses from ASP.NET Core back to API Gateway.
 
@@ -72,3 +72,19 @@ Create S3 Bucket
 ```
 	aws s3api create-bucket --bucket 792163935563 --profile justine --region us-east-1
 ```
+
+/Justine.LambdaWebApi/
+/Justine.client/
+/infrastructure/           # Terraform for AWS resources (Lambdas, S3, DynamoDB, etc.)
+    main.tf
+    variables.tf
+    outputs.tf
+    /modules/
+        # (optional) custom modules for Lambda, S3, etc.
+/buildConfiguration/       # Terraform for CI/CD pipeline (e.g., CodePipeline, CodeBuild)
+    main.tf
+    variables.tf
+    outputs.tf
+.gitignore
+README.md
+Justine.sln
