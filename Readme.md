@@ -1,7 +1,11 @@
 ﻿# Introduction
+## Upgraded from .NET Core 8 to 10.0.102
+https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-10.0.102-windows-x64-installer
 ## Brief overview of the project and its goals
 - Primary purpose: Customer-facing React application that showcases Products, Baskets, and Orders
 - Goal: Showcase the use of AWS services and the microservices pattern Saga
+
+## IAM Groups and Roles
 
 ### Saga Pattern
 - Each microservice has own data store
@@ -9,6 +13,10 @@
 # System Architecture Overview: High-level diagram and description of architecture
 ## Main components: 
 ## Security Best Practices
+### KMS: Used for Data Encryption
+may not need AWS KMS keys for certificate 
+management alone, it is advisable to use them if your application involves encrypting sensitive information to ensure security and compliance.
+
 Use API Gateway for in-transit protection (TLS) but not for at‑rest encryption — do both with the right AWS services.
 #### In transit
 - Enforce HTTPS/TLS (API Gateway + CloudFront); require TLS 1.2+, HSTS.
@@ -16,6 +24,7 @@ Use API Gateway for in-transit protection (TLS) but not for at‑rest encryption
 - Validate and authorize requests (Cognito/OAuth, JWTs, or IAM) and apply AWS WAF.
 - Use private integrations or VPC Link so backend traffic stays inside AWS and TLS is used end‑to‑end.
 #### At rest
+# ------
 - Enable server-side encryption (S3 SSE‑KMS, DynamoDB SSE, RDS encryption).
 - Use AWS KMS CMKs with least‑privilege key policies and automatic rotation.
 - Store secrets in Secrets Manager or Parameter Store (KMS‑encrypted).
@@ -24,6 +33,7 @@ Use API Gateway for in-transit protection (TLS) but not for at‑rest encryption
 #### Operational
 - Use VPC endpoints, least privilege IAM, CloudTrail/CloudWatch logging, and key rotation/auditing.
 
+# ---------
 ### React frontend
 
 Use TLS for network traffic

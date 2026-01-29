@@ -1,11 +1,10 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2;
-using Justine.Common.Services;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.FileProviders;
+using Amazon.KeyManagementService;
+
+using Justine.Common.Services;
 
 namespace Justine.LambdaWebApi
 {
@@ -30,8 +29,18 @@ namespace Justine.LambdaWebApi
             services.AddSingleton<IBasketServices, BasketServices>();
             services.AddSingleton<IOrderServices, OrderServices>();
 
+            services.AddAWSService<IAmazonKeyManagementService>(); // AWS SDK extension method
+            services.AddSingleton<IEncryptionService, KmsEncryptionService>();
+
             // Swagger (optional)
-            services.AddSwaggerGen(options => { /* ...existing config... */ });
+            services.AddSwaggerGen(options => { 
+                /* ...existing config... */
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = $"XXXXXXXXXXXXXXXXXXX.{Configuration["AWS:Region"]}.amazonaws.com/{Configuration["Cognito:UserPoolId"]}";
+                    options.Audience = Configuration["Cognito:UserPoolId"];
+                });});
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -55,15 +64,6 @@ namespace Justine.LambdaWebApi
 
             app.UseHttpsRedirection();
 
-            //// Serve static login page from wwwroot/login.html
-            //var webRoot = Path.Combine(env.ContentRootPath, "wwwroot");
-            //var fileProvider = new PhysicalFileProvider(webRoot);
-            //var defaultFilesOptions = new DefaultFilesOptions { FileProvider = fileProvider };
-            //defaultFilesOptions.DefaultFileNames.Clear();
-            //defaultFilesOptions.DefaultFileNames.Add("login.html");
-            //app.UseDefaultFiles(defaultFilesOptions);
-            //app.UseStaticFiles(new StaticFileOptions { FileProvider = fileProvider });
-
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthorization();
@@ -74,12 +74,6 @@ namespace Justine.LambdaWebApi
                 // All non-API requests return login.html
                 endpoints.MapFallbackToFile("/login.html");
             });
-
-            //app.Run();
-            //app.Run(async (context) =>
-            //{
-            //    await context.Response.WriteAsync("Hello from Lambda!");
-            //});
         }
     }
 }
