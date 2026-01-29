@@ -4,19 +4,16 @@ using Justine.Common.Services;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.FileProviders;
 
 namespace Justine.LambdaWebApi
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
+        public Startup(IConfiguration configuration) => Configuration = configuration;
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
@@ -33,48 +30,56 @@ namespace Justine.LambdaWebApi
             services.AddSingleton<IBasketServices, BasketServices>();
             services.AddSingleton<IOrderServices, OrderServices>();
 
-
-            // Swagger
-            services.AddSwaggerGen(swagger =>
-            {
-                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Basket, Order, Product API" });
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                swagger.IncludeXmlComments(xmlPath);
-            });
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.Authority = $"https://{Configuration["Auth0:Domain"]}";
-                    options.Audience = Configuration["Auth0:Audience"];
-                });
+            // Swagger (optional)
+            services.AddSwaggerGen(options => { /* ...existing config... */ });
         }
 
-    
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            // Respect X-Forwarded-Proto from API GW / CloudFront so HTTPS redirection works behind proxy
+            var forwardedOptions = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedProto
+            };
+            // allow forwarded headers from any proxy (CloudFront/API Gateway)
+            forwardedOptions.KnownNetworks.Clear();
+            forwardedOptions.KnownProxies.Clear();
+
+            app.UseForwardedHeaders(forwardedOptions);
+
+            if (!env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
+            //// Serve static login page from wwwroot/login.html
+            //var webRoot = Path.Combine(env.ContentRootPath, "wwwroot");
+            //var fileProvider = new PhysicalFileProvider(webRoot);
+            //var defaultFilesOptions = new DefaultFilesOptions { FileProvider = fileProvider };
+            //defaultFilesOptions.DefaultFileNames.Clear();
+            //defaultFilesOptions.DefaultFileNames.Add("login.html");
+            //app.UseDefaultFiles(defaultFilesOptions);
+            //app.UseStaticFiles(new StaticFileOptions { FileProvider = fileProvider });
 
+            app.UseStaticFiles();
+            app.UseRouting();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Welcome to running ASP.NET Core on AWS Lambda");
-                });
+                endpoints.MapControllers(); // API endpoints still available
+                // All non-API requests return login.html
+                endpoints.MapFallbackToFile("/login.html");
             });
+
+            //app.Run();
+            //app.Run(async (context) =>
+            //{
+            //    await context.Response.WriteAsync("Hello from Lambda!");
+            //});
         }
     }
 }

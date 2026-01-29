@@ -7,8 +7,10 @@
     "start": "vite",
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "postbuild": "bash ./scripts/publish_wwwroot.sh",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-cert": "bash ./scripts/generate-cert-dotnet.sh"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.817.0",

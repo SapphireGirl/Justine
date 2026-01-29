@@ -10,19 +10,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.CloudFormation" Version="4.0.0.1" />
-    <PackageReference Include="AWSSDK.CloudWatch" Version="4.0.0.1" />
-    <PackageReference Include="AWSSDK.Core" Version="4.0.0.2" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.0.2" />
-    <PackageReference Include="AWSSDK.EventBridge" Version="4.0.0.1" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.0" />
-    <PackageReference Include="AWSSDK.Lambda" Version="4.0.0.1" />
-    <PackageReference Include="AWSSDK.S3" Version="4.0.0.1" />
-    <PackageReference Include="AWSSDK.SQS" Version="4.0.0.1" />
+    <PackageReference Include="AWSSDK.CloudFormation" Version="4.0.8.7" />
+    <PackageReference Include="AWSSDK.CloudWatch" Version="4.0.6.6" />
+    <PackageReference Include="AWSSDK.Core" Version="4.0.3.11" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.11" />
+    <PackageReference Include="AWSSDK.EventBridge" Version="4.0.5.14" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.21" />
+    <PackageReference Include="AWSSDK.Lambda" Version="4.0.12.5" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.17.3" />
+    <PackageReference Include="AWSSDK.SQS" Version="4.0.2.13" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
-      <Version>9.0.4</Version>
+      <Version>10.0.2</Version>
     </PackageReference>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>

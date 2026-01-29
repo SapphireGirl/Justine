@@ -1,0 +1,1 @@
+openssl x509 -in ssl/JustineClient.crt -noout -text | sed -n '/Subject:/,/X509v3 Subject Alternative Name/p'

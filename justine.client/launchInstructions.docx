@@ -1,0 +1,40 @@
+﻿Ensure VS Code launches only the frontend (https://localhost:5173) and does not open the backend URL.
+
+Instructions:
+1. Purpose
+   - Prevent VS Code from automatically launching the backend (.NET) profile and opening https://localhost:53996.
+   - Ensure the workspace launch opens only the frontend dev server at https://localhost:5173.
+
+2. Disable backend browser launch
+   - Confirm the .NET project launchSettings.json has "launchBrowser": false for any profiles (example already in Properties/launchSettings.json).
+   - This stops dotnet from opening a browser when the backend runs.
+
+3. Remove backend entries from VS Code launch configurations
+   - Open .vscode/launch.json (workspace-level or frontend folder).
+   - Remove any configuration whose "type" is "coreclr" or that references the backend profile name (e.g., "Justine.LambdaWebApi").
+   - If there is a "compounds" entry that includes both frontend and backend, edit it to include only the frontend configuration or delete the compound.
+
+4. Use the frontend-only launch configuration
+   - Keep a single Chrome launch config that opens https://localhost:5173 and starts the Vite dev server (preLaunchTask "npm: dev"):
+     - type: "pwa-chrome"
+     - url: "https://localhost:5173"
+     - preLaunchTask: "npm: dev"
+     - webRoot: "${workspaceFolder}" (or "${workspaceFolder}/justine.client" if workspace root is repo)
+   - Start this configuration when debugging.
+
+5. Running the backend manually (no browser)
+   - If you need the backend during development, run it from a terminal without launching a browser:
+     - dotnet run --project src/Justine.LambdaWebApi
+   - Or run with a no-launch-profile option if available in your tooling.
+
+6. Multi-root workspace notes
+   - If your repository root is open in VS Code, set the frontend launch "webRoot" to "${workspaceFolder}/justine.client" or open justine.client as the workspace root (File → Open Folder...) so "${workspaceFolder}" resolves correctly.
+
+7. Verify
+   - Stop any running debug sessions.
+   - Start the frontend launch config only. Confirm only https://localhost:5173 opens.
+   - If a backend browser window still appears, search other launch.json files (workspace, other folders) or saved compound configurations and remove backend references.
+
+Notes:
+- Keep backend launchBrowser disabled in launchSettings.json to avoid accidental browser opens from dotnet tooling.
+- Document these steps in your README or CONTRIBUTING.md so other developers follow the same workflow.

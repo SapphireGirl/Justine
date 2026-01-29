@@ -22,4 +22,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Justine.Common\Justine.Common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="wwwroot\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
