@@ -1,12 +1,3 @@
-# To run the client
-## Run the generate-cert-dotnet.sh script to create a self-signed certificate for local development.
-
-## Run the trust-windows.ps1 file to trust the self-signed certificate on Windows.
-## Restart the browser if it's open.
-## Then build and run the client application:
-https://localhost:5173  Https must be set up for this localhost
-
-
 # Justine Project - Terraform Infrastructure Documentation
 
 ## Overview
@@ -22,14 +13,14 @@ This document provides comprehensive documentation for the Terraform infrastruct
 ## Directory Structure
 ```
 Justine/
-??? apiDeploy/           # Terraform for API infrastructure
-?   ??? main.tf         # Core infrastructure resources
-?   ??? locals.tf       # Local variables and configurations
-?   ??? outputs.tf      # Output values
-?   ??? versions.tf     # Terraform version constraints
-?   ??? Makefile        # Build and deployment automation
-??? BuildCICD/          # CI/CD pipeline configuration
-??? .github/workflows/  # GitHub Actions workflows
+├── apiDeploy/           # Terraform for API infrastructure
+│   ├── main.tf         # Core infrastructure resources
+│   ├── locals.tf       # Local variables and configurations
+│   ├── outputs.tf      # Output values
+│   ├── versions.tf     # Terraform version constraints
+│   └── Makefile        # Build and deployment automation
+├── BuildCICD/          # CI/CD pipeline configuration
+└── .github/workflows/  # GitHub Actions workflows
 ```
 
 ## Terraform Resources

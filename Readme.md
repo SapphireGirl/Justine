@@ -1,10 +1,32 @@
-# Introduction
+﻿# Introduction
 ## Brief overview of the project and its goals
 - Primary purpose: Customer-facing React application that showcases Products, Baskets, and Orders
-- Goal: Showcase the use of AWS services and microservices architecture
+- Goal: Showcase the use of AWS services and the microservices pattern Saga
+
+### Saga Pattern
+- Each microservice has own data store
+- Must be able to roll back the transactions (Could use with analytics)
 # System Architecture Overview: High-level diagram and description of architecture
 ## Main components: 
+## Security Best Practices
+Use API Gateway for in-transit protection (TLS) but not for at‑rest encryption — do both with the right AWS services.
+#### In transit
+- Enforce HTTPS/TLS (API Gateway + CloudFront); require TLS 1.2+, HSTS.
+- Use a custom domain with ACM certificate; consider mutual TLS (mTLS) for client auth.
+- Validate and authorize requests (Cognito/OAuth, JWTs, or IAM) and apply AWS WAF.
+- Use private integrations or VPC Link so backend traffic stays inside AWS and TLS is used end‑to‑end.
+#### At rest
+- Enable server-side encryption (S3 SSE‑KMS, DynamoDB SSE, RDS encryption).
+- Use AWS KMS CMKs with least‑privilege key policies and automatic rotation.
+- Store secrets in Secrets Manager or Parameter Store (KMS‑encrypted).
+- Encrypt Lambda environment variables with KMS.
+
+#### Operational
+- Use VPC endpoints, least privilege IAM, CloudTrail/CloudWatch logging, and key rotation/auditing.
+
 ### React frontend
+
+Use TLS for network traffic
 ### C# Lambda API
 Uses DynamoDB
 ### DynamoDB
@@ -13,7 +35,7 @@ Write Services and Terraform
 - Services for CRUD operations
 - Register Services in Justine.Lambdas project
 ### S3 buckets
-### Terraform
+
 #### Deployment process
 - Deploy React frontend to an S3 Bucket: Requires Script to build and deploy
 - Deploy API Gateway with Lambda functions: Write Terraform for API Gateway and Lambdas
