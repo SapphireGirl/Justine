@@ -1,461 +1,237 @@
 ﻿using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
-using Justine.Common.Exceptions;
-using Justine.Common.Models;
-using Newtonsoft.Json;
+using Amazon.Lambda.Core;
 
 namespace Justine.Common.Services
 {
     public class AdminServices : IAdminServices
     {
-        public readonly IAmazonDynamoDB _dynamoDbClient;
+        private readonly IAmazonDynamoDB _dynamo;
+        private const int MaxSeedRetries = 5;
 
-        public AdminServices(IAmazonDynamoDB dynamoDbClient)
+        public AdminServices(IAmazonDynamoDB dynamo)
         {
-            _dynamoDbClient = dynamoDbClient ?? throw new ArgumentNullException(nameof(dynamoDbClient));
+            _dynamo = dynamo;
         }
 
-        public async Task CreateProductTableAsync()
-        {
-            const string tableName = "Products";
+        public Task CreateProductTableAsync()
+            => CreateTableAsync("Products", "ProductId", ScalarAttributeType.N, "Name", ScalarAttributeType.S, seed: true);
 
-            // Check if the table already exists
-            var existingTables = await _dynamoDbClient.ListTablesAsync();
-            if (existingTables.TableNames.Contains(tableName))
+        public Task CreateBasketTableAsync()
+            => CreateTableAsync("Baskets", "BasketId", ScalarAttributeType.N, "CustomerName", ScalarAttributeType.S, seed: false);
+
+        public Task CreateOrderTableAsync()
+            => CreateTableAsync("Orders", "OrderId", ScalarAttributeType.N, "CustomerName", ScalarAttributeType.S, seed: false);
+
+        public async Task<bool> CreateTableAsync(string tableName,
+                                                 string primaryKeyName,
+                                                 ScalarAttributeType primaryKeyType,
+                                                 string? sortKeyName = null,
+                                                 ScalarAttributeType? sortKeyType = null,
+                                                 bool seed = false)
+        {
+            if (string.IsNullOrWhiteSpace(tableName) || string.IsNullOrWhiteSpace(primaryKeyName))
             {
-                Console.WriteLine($"Table '{tableName}' already exists.");
-                return;
+                throw new ArgumentException("tableName and primaryKeyName are required.");
             }
 
-            // Define the table schema
-            var createTableRequest = new CreateTableRequest
-            {
-                TableName = tableName,
-                AttributeDefinitions =
-            [
-                new AttributeDefinition
-                {
-                    AttributeName = "ProductId",
-                    AttributeType = "S" // String type
-                }
-            ],
-                KeySchema =
-            [
-                new KeySchemaElement
-                {
-                    AttributeName = "ProductId",
-                    KeyType = "HASH" // Partition key
-                }
-            ],
-                ProvisionedThroughput = new ProvisionedThroughput
-                {
-                    ReadCapacityUnits = 5,
-                    WriteCapacityUnits = 5
-                }
-            };
-
-            // Create the table
             try
             {
-                var response = await _dynamoDbClient.CreateTableAsync(createTableRequest);
-                Console.WriteLine($"Table '{tableName}' created successfully. Status: {response.TableDescription.TableStatus}");
+                // Check existence safely
+                bool tableExists;
+                try
+                {
+                    var desc = await _dynamo.DescribeTableAsync(new DescribeTableRequest { TableName = tableName });
+                    tableExists = desc?.Table?.TableStatus == TableStatus.ACTIVE;
+                }
+                catch (ResourceNotFoundException)
+                {
+                    tableExists = false;
+                }
 
-                // Wait for the table to become active
-                await WaitForTableToBeActiveAsync(tableName);
+                if (!tableExists)
+                {
+                    var attrDefs = new List<AttributeDefinition>
+                    {
+                        new AttributeDefinition
+                        {
+                            AttributeName = primaryKeyName,
+                            AttributeType = primaryKeyType
+                        }
+                    };
 
-                // Populate the table with initial data
-                await PopulateProductTableAsync(tableName);
+                    var keySchema = new List<KeySchemaElement>
+                    {
+                        new KeySchemaElement
+                        {
+                            AttributeName = primaryKeyName,
+                            KeyType = KeyType.HASH
+                        }
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(sortKeyName))
+                    {
+                        attrDefs.Add(new AttributeDefinition
+                        {
+                            AttributeName = sortKeyName!,
+                            AttributeType = sortKeyType.Value
+                        });
+
+                        keySchema.Add(new KeySchemaElement
+                        {
+                            AttributeName = sortKeyName!,
+                            KeyType = KeyType.RANGE
+                        });
+                    }
+
+                    var createReq = new CreateTableRequest
+                    {
+                        TableName = tableName,
+                        AttributeDefinitions = attrDefs,
+                        KeySchema = keySchema,
+                        BillingMode = BillingMode.PAY_PER_REQUEST
+                    };
+
+                    await _dynamo.CreateTableAsync(createReq);
+
+                    // wait for ACTIVE
+                    var describeReq = new DescribeTableRequest { TableName = tableName };
+                    TableStatus status;
+                    do
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(2));
+                        var descResp = await _dynamo.DescribeTableAsync(describeReq);
+                        status = descResp.Table.TableStatus;
+                    } while (status != TableStatus.ACTIVE);
+                }
+
+                if (seed && tableName.Equals("Products", StringComparison.OrdinalIgnoreCase))
+                {
+                    await SeedProductsAsync();
+                }
+
+                return true;
             }
             catch (Exception ex)
             {
-                // To get the inner exception and stack trace for more detailed error information
-                if (ex.ToString() != null)
-                {
-                    throw new AdminException($"Error creating table '{tableName}': {ex.ToString()}");
-                }
-
-                throw new AdminException($"Failed to create table '{tableName}'. Error: {ex.Message}");
+                LambdaLogger.Log($"CreateTableAsync failed for {tableName}: {ex}");
+                throw;
             }
         }
 
-        public async Task CreateBasketTableAsync()
+        public async Task SeedProductsAsync()
         {
-            const string tableName = "Baskets";
+            var now = DateTime.UtcNow.ToString("o");
+            var TableName = "Products";
 
-            // Check if the table already exists
-            var existingTables = await _dynamoDbClient.ListTablesAsync();
-            if (existingTables.TableNames.Contains(tableName))
+            var sampleProducts = new List<Dictionary<string, AttributeValue>>
             {
-                Console.WriteLine($"Table '{tableName}' already exists.");
-                return;
-            }
-
-            // Define the table schema
-            var createTableRequest = new CreateTableRequest
-            {
-                TableName = tableName,
-                AttributeDefinitions =
-            [
-                new AttributeDefinition
+                new()
                 {
-                    AttributeName = "BasketId",
-                    AttributeType = "S" // String type
-                }
-            ],
-                KeySchema =
-            [
-                new KeySchemaElement
-                {
-                    AttributeName = "BasketId",
-                    KeyType = "HASH" // Partition key
-                }
-            ],
-                ProvisionedThroughput = new ProvisionedThroughput
-                {
-                    ReadCapacityUnits = 5,
-                    WriteCapacityUnits = 5
-                }
-            };
-
-            // Create the table
-            try
-            {
-                var response = await _dynamoDbClient.CreateTableAsync(createTableRequest);
-                Console.WriteLine($"Table '{tableName}' created successfully. Status: {response.TableDescription.TableStatus}");
-
-                // Wait for the table to become active
-                await WaitForTableToBeActiveAsync(tableName);
-
-                // Populate the table with initial data
-                await PopulateBasketTableAsync(tableName);
-            }
-            catch (Exception ex)
-            {
-                // To get the inner exception and stack trace for more detailed error information
-                if (ex.ToString() != null)
-                {
-                    throw new AdminException($"Error creating table '{tableName}': {ex.ToString()}");
-                }
-
-                throw new AdminException($"Failed to create table '{tableName}'. Error: {ex.Message}");
-            }
-        }
-
-        public async Task CreateOrderTableAsync()
-        {
-            const string tableName = "Orders";
-
-            // Check if the table already exists
-            var existingTables = await _dynamoDbClient.ListTablesAsync();
-            if (existingTables.TableNames.Contains(tableName))
-            {
-                Console.WriteLine($"Table '{tableName}' already exists.");
-                return;
-            }
-
-            // Define the table schema
-            var createTableRequest = new CreateTableRequest
-            {
-                TableName = tableName,
-                AttributeDefinitions =
-            [
-                new() {
-                    AttributeName = "OrderId",
-                    AttributeType = "S" // String type
+                    ["ProductId"] = new AttributeValue { N = "1" },
+                    ["Name"] = new AttributeValue { S = "Justine Mug" },
+                    ["Description"] = new AttributeValue { S = "A mug for the dedicated developer." },
+                    ["Price"] = new AttributeValue { N = "12.95" },
+                    ["ImageUrl"] = new AttributeValue { S = "" },
+                    ["Quantity"] = new AttributeValue { N = "15" },
+                    ["CreatedAt"] = new AttributeValue { S = now },
+                    ["UpdatedAt"] = new AttributeValue { S = now }
                 },
-                new() {
-                    AttributeName = "UserId",
-                    AttributeType = "S" // String type
-                }
-            ],
-                KeySchema =
-            [
-                new KeySchemaElement
+                new()
                 {
-                    AttributeName = "OrderId",
-                    KeyType = "HASH" // Partition key
+                    ["ProductId"] = new AttributeValue { N = "2" },
+                    ["Name"] = new AttributeValue { S = "Justine T-Shirt" },
+                    ["Description"] = new AttributeValue { S = "Comfortable cotton tee." },
+                    ["Price"] = new AttributeValue { N = "19.99" },
+                    ["ImageUrl"] = new AttributeValue { S = "" },
+                    ["Quantity"] = new AttributeValue { N = "30" },
+                    ["CreatedAt"] = new AttributeValue { S = now },
+                    ["UpdatedAt"] = new AttributeValue { S = now }
                 },
-                new KeySchemaElement
+                new()
                 {
-                    AttributeName = "UserId",
-                    KeyType = "RANGE" // Sort key
-                }
-            ],
-                ProvisionedThroughput = new ProvisionedThroughput
-                {
-                    ReadCapacityUnits = 5,
-                    WriteCapacityUnits = 5
+                    ["ProductId"] = new AttributeValue { N = "3" },
+                    ["Name"] = new AttributeValue { S = "Justine Sticker Pack" },
+                    ["Description"] = new AttributeValue { S = "Decorate your laptop." },
+                    ["Price"] = new AttributeValue { N = "4.50" },
+                    ["ImageUrl"] = new AttributeValue { S = "" },
+                    ["Quantity"] = new AttributeValue { N = "100" },
+                    ["CreatedAt"] = new AttributeValue { S = now },
+                    ["UpdatedAt"] = new AttributeValue { S = now }
                 }
             };
 
-            // Create the table
-            try
+            var writeRequests = sampleProducts.Select(item => new WriteRequest { PutRequest = new PutRequest { Item = item } }).ToList();
+            var requestItems = new Dictionary<string, List<WriteRequest>> { [TableName] = writeRequests };
+
+            var batchRequest = new BatchWriteItemRequest { RequestItems = requestItems };
+            var batchResponse = await _dynamo.BatchWriteItemAsync(batchRequest);
+
+            int retries = 0;
+            while (batchResponse.UnprocessedItems != null && batchResponse.UnprocessedItems.Count > 0 && retries < MaxSeedRetries)
             {
-                var response = await _dynamoDbClient.CreateTableAsync(createTableRequest);
-                Console.WriteLine($"Table '{tableName}' created successfully. Status: {response.TableDescription.TableStatus}");
-
-                // Wait for the table to become active
-                await WaitForTableToBeActiveAsync(tableName);
-
-                // Populate the table with initial data
-                await PopulateOrderTableAsync(tableName);
-            }
-            catch (Exception ex)
-            {
-                // To get the inner exception and stack trace for more detailed error information
-                if (ex.ToString() != null)
-                {
-                    throw new AdminException($"Error creating table '{tableName}': {ex.ToString()}");
-                }
-
-                throw new AdminException($"Failed to create table '{tableName}'. Error: {ex.Message}");
+                await Task.Delay(TimeSpan.FromSeconds(1 + retries));
+                batchResponse = await _dynamo.BatchWriteItemAsync(new BatchWriteItemRequest { RequestItems = batchResponse.UnprocessedItems });
+                retries++;
             }
         }
-
-        public Task<bool> DeleteAllLambdasAsync()
+        public Task SeedBasketsAsync()
         {
+            var TableName = "Products";
             throw new NotImplementedException();
         }
 
-        public async Task<bool> DeleteBasketTableAsync()
+        public Task SeedOrderAsync()
         {
-            const string tableName = "Baskets";
+            throw new NotImplementedException();
+        }
+        public async Task<bool> DeleteTableAsync(string tableName)
+        {
+            if (string.IsNullOrWhiteSpace(tableName)) throw new ArgumentException(nameof(tableName));
 
             try
             {
-                // Check if the table exists
-                var existingTables = await _dynamoDbClient.ListTablesAsync();
-                if (!existingTables.TableNames.Contains(tableName))
+                // If table doesn't exist, return false
+                try
                 {
-                    Console.WriteLine($"Table '{tableName}' does not exist.");
+                    await _dynamo.DescribeTableAsync(new DescribeTableRequest { TableName = tableName });
+                }
+                catch (ResourceNotFoundException)
+                {
                     return false;
                 }
 
-                // Delete the table
-                var deleteTableRequest = new DeleteTableRequest
-                {
-                    TableName = tableName
-                };
+                await _dynamo.DeleteTableAsync(new DeleteTableRequest { TableName = tableName });
 
-                var response = await _dynamoDbClient.DeleteTableAsync(deleteTableRequest);
-                Console.WriteLine($"Table '{tableName}' deleted successfully. Status: {response.TableDescription.TableStatus}");
+                // wait until table is gone
+                var describeReq = new DescribeTableRequest { TableName = tableName };
+                do
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    try
+                    {
+                        var desc = await _dynamo.DescribeTableAsync(describeReq);
+                        if (desc.Table.TableStatus == TableStatus.DELETING) continue;
+                    }
+                    catch (ResourceNotFoundException)
+                    {
+                        // deleted
+                        break;
+                    }
+                } while (true);
 
                 return true;
             }
             catch (Exception ex)
             {
-                // To get the inner exception and stack trace for more detailed error information
-                if (ex.ToString() != null)
-                {
-                    throw new AdminException($"Error deleting table '{tableName}': {ex.ToString()}");
-                }
-
-                throw new AdminException($"Failed to delete table '{tableName}'. Error: {ex.Message}");
+                LambdaLogger.Log($"DeleteTableAsync failed for {tableName}: {ex}");
+                throw;
             }
         }
+        public Task<bool> DeleteProductTableAsync() => DeleteTableAsync("Products");
+        public Task<bool> DeleteBasketTableAsync() => DeleteTableAsync("Baskets");
+        public Task<bool> DeleteOrderTableAsync() => DeleteTableAsync("Orders");
 
-        public async Task<bool> DeleteOrderTableAsync()
-        {
-            const string tableName = "Orders";
-
-            try
-            {
-                // Check if the table exists
-                var existingTables = await _dynamoDbClient.ListTablesAsync();
-                if (!existingTables.TableNames.Contains(tableName))
-                {
-                    Console.WriteLine($"Table '{tableName}' does not exist.");
-                    return false;
-                }
-
-                // Delete the table
-                var deleteTableRequest = new DeleteTableRequest
-                {
-                    TableName = tableName
-                };
-
-                var response = await _dynamoDbClient.DeleteTableAsync(deleteTableRequest);
-                Console.WriteLine($"Table '{tableName}' deleted successfully. Status: {response.TableDescription.TableStatus}");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                // To get the inner exception and stack trace for more detailed error information
-                if (ex.ToString() != null)
-                {
-                    throw new AdminException($"Error deleting table '{tableName}': {ex.ToString()}");
-                }
-                throw new AdminException($"Failed to delete table '{tableName}'. Error: {ex.Message}");
-            }
-        }
-
-        public async Task<bool> DeleteProductTableAsync()
-        {
-            const string tableName = "Products";
-
-            try
-            {
-                // Check if the table exists
-                var existingTables = await _dynamoDbClient.ListTablesAsync();
-                if (!existingTables.TableNames.Contains(tableName))
-                {
-                    Console.WriteLine($"Table '{tableName}' does not exist.");
-                    return false;
-                }
-
-                // Delete the table
-                var deleteTableRequest = new DeleteTableRequest
-                {
-                    TableName = tableName
-                };
-
-                var response = await _dynamoDbClient.DeleteTableAsync(deleteTableRequest);
-                Console.WriteLine($"Table '{tableName}' deleted successfully. Status: {response.TableDescription.TableStatus}");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                // To get the inner exception and stack trace for more detailed error information
-                if (ex.ToString() != null)
-                {
-                    throw new AdminException($"Error deleting table '{tableName}': {ex.ToString()}");
-                }
-                throw new AdminException($"Failed to delete table '{tableName}'. Error: {ex.Message}");
-            }
-        }
-
-        // private methods
-        private async Task WaitForTableToBeActiveAsync(string tableName)
-        {
-            Console.WriteLine($"Waiting for table '{tableName}' to become active...");
-            while (true)
-            {
-                var tableStatus = await _dynamoDbClient.DescribeTableAsync(new DescribeTableRequest
-                {
-                    TableName = tableName
-                });
-
-                if (tableStatus.Table.TableStatus == TableStatus.ACTIVE)
-                {
-                    Console.WriteLine($"Table '{tableName}' is now active.");
-                    break;
-                }
-
-                await Task.Delay(5000); // Wait for 5 seconds before checking again
-            }
-        }
-
-        private async Task PopulateProductTableAsync(string tableName)
-        {
-            var initialProducts = new List<Dictionary<string, AttributeValue>>
-            {
-                new() {
-                    { "ProductId", new AttributeValue { S = "1" } },
-                    { "Name", new AttributeValue { S = "Product A" } },
-                    { "Description", new AttributeValue { S = "Description of Product A" } },
-                    { "Price", new AttributeValue { N = "10.99" } },
-                    { "Quantity", new AttributeValue { N = "100" } }
-                },
-                new() {
-                    { "ProductId", new AttributeValue { S = "2" } },
-                    { "Name", new AttributeValue { S = "Product B" } },
-                    { "Description", new AttributeValue { S = "Description of Product B" } },
-                    { "Price", new AttributeValue { N = "15.99" } },
-                    { "Quantity", new AttributeValue { N = "200" } }
-                }
-            };
-
-            foreach (var product in initialProducts)
-            {
-                try
-                {
-                    await _dynamoDbClient.PutItemAsync(new PutItemRequest
-                    {
-                        TableName = tableName,
-                        Item = product
-                    });
-                    Console.WriteLine($"Inserted product with ID '{product["ProductId"].S}' into table '{tableName}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to insert product with ID '{product["ProductId"].S}'. Error: {ex.Message}");
-                }
-            }
-        }
-
-        private async Task PopulateBasketTableAsync(string tableName)
-        {
-            var initialBaskets = new List<Dictionary<string, AttributeValue>>
-            {
-                new() {
-                    { "BasketId", new AttributeValue { S = "1" } },
-                    { "UserId", new AttributeValue { S = "UserA" } },
-                    { "Items", new AttributeValue { S = "[{\"ProductId\":\"1\",\"Quantity\":2},{\"ProductId\":\"2\",\"Quantity\":1}]" } }
-                },
-                new() {
-                    { "BasketId", new AttributeValue { S = "2" } },
-                    { "UserId", new AttributeValue { S = "UserB" } },
-                    { "Items", new AttributeValue { S = "[{\"ProductId\":\"3\",\"Quantity\":5}]" } }
-                }
-            };
-
-            foreach (var basket in initialBaskets)
-            {
-                try
-                {
-                    await _dynamoDbClient.PutItemAsync(new PutItemRequest
-                    {
-                        TableName = tableName,
-                        Item = basket
-                    });
-                    Console.WriteLine($"Inserted basket with ID '{basket["BasketId"].S}' into table '{tableName}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to insert basket with ID '{basket["BasketId"].S}'. Error: {ex.Message}");
-                }
-            }
-        }
-
-        private async Task PopulateOrderTableAsync(string tableName)
-        {
-            var initialOrders = new List<Dictionary<string, AttributeValue>>
-        {
-            new() {
-                { "OrderId", new AttributeValue { S = "1001" } },
-                { "UserId", new AttributeValue { S = "UserA" } },
-                { "OrderDate", new AttributeValue { S = "2023-10-01" } },
-                { "Items", new AttributeValue { S = "[{\"ProductId\":\"1\",\"Quantity\":2},{\"ProductId\":\"2\",\"Quantity\":1}]" } },
-                { "TotalAmount", new AttributeValue { N = "36.97" } }
-            },
-            new() {
-                { "OrderId", new AttributeValue { S = "1002" } },
-                { "UserId", new AttributeValue { S = "UserB" } },
-                { "OrderDate", new AttributeValue { S = "2023-10-02" } },
-                { "Items", new AttributeValue { S = "[{\"ProductId\":\"3\",\"Quantity\":5}]" } },
-                { "TotalAmount", new AttributeValue { N = "79.95" } }
-            }
-        };
-
-            foreach (var order in initialOrders)
-            {
-                try
-                {
-                    await _dynamoDbClient.PutItemAsync(new PutItemRequest
-                    {
-                        TableName = tableName,
-                        Item = order
-                    });
-                    Console.WriteLine($"Inserted order with ID '{order["OrderId"].S}' into table '{tableName}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to insert order with ID '{order["OrderId"].S}'. Error: {ex.Message}");
-                }
-            }
-        }
+        
     }
 }

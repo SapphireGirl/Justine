@@ -9,9 +9,9 @@ namespace Justine.Common.Models
         [DynamoDBHashKey]
         public int BasketId { get; set; } // Required
 
-        [DynamoDBRangeKey]
         private string _customerName = string.Empty; // Initialize to a non-null default value
 
+        [DynamoDBRangeKey]
         public string CustomerName
         {
             get => _customerName;

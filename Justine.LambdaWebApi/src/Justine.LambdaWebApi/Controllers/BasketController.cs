@@ -53,14 +53,14 @@ namespace Justine.LambdaWebApi.Controllers
         // POST Baskets/baskets
         // check if Path is correct when posting a basket?
         [HttpPost]
-        public async Task<Basket> AddBasketAsync([FromBody] Basket basket)
+        public async Task<bool> AddBasketAsync([FromBody] Basket basket)
         {
             try
             {
 
-                var newBasket = await _basketServices.AddBasketAsync(basket);
+                var basketUpdated = await _basketServices.AddBasketAsync(basket);
                 LambdaLogger.Log($"AddBasketAsync: Success: Id: {basket.BasketId}");
-                return newBasket;
+                return basketUpdated;
             }
             catch (Exception ex)
             {

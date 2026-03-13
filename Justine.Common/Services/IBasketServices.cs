@@ -6,7 +6,7 @@ namespace Justine.Common.Services
     {
         Task<Basket> GetBasketByIdAsync(int basketId);
         Task<IEnumerable<Basket>> GetAllBasketsAsync();
-        Task<Basket> AddBasketAsync(Basket basket);
+        Task<bool> AddBasketAsync(Basket basket);
         Task<Basket> UpdateBasketAsync(Basket basket);
         Task<bool> DeleteBasketAsync(int basketId);
         Task<IEnumerable<Basket>> GetUsersBasketsByNameAsync(string customerName);

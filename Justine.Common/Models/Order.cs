@@ -8,9 +8,9 @@ namespace Justine.Common.Models
         [DynamoDBHashKey]
         public int OrderId { get; set; } // Required
 
-        [DynamoDBRangeKey]
         private string _customerName = string.Empty; // Initialize to a non-null default value
 
+        [DynamoDBRangeKey]
         public string CustomerName
         {
             get => _customerName;
@@ -28,6 +28,9 @@ namespace Justine.Common.Models
         public int BasketId { get; set; } // Required
 
         [DynamoDBProperty]
-        public DateTime OrderDate { get; set; } = DateTime.UtcNow; // Initialize to a default value
+        public DateTime? CreatedAt { get; set; } // Nullable, optional
+
+        [DynamoDBProperty]
+        public DateTime? UpdatedAt { get; set; } // Nullable, optional
     }
 }

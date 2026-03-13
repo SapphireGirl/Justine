@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>c17d89c6-e97e-482c-b302-271c85af2b2b</UserSecretsId>
@@ -10,7 +10,9 @@
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.3" />
     <PackageReference Include="Amazon.Lambda.Core" Version="2.8.0" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.11" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.12" />
+    <PackageReference Include="AWSSDK.KeyManagementService" Version="4.0.8.7" />
+    <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.4.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
