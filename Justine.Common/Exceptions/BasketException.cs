@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 namespace Justine.Common.Exceptions
 {
-    // TODO: Add Logging
-    public class BasketException : Exception
+    public class BasketException : AppException
     {
-        public BasketException(string message) : base(message)
+        public BasketException(string message) : base(message, HttpStatusCode.BadRequest)
         {
         }
 
-        public BasketException(string message, Exception innerException) : base(message, innerException)
+        public BasketException(string message, Exception innerException) : base(message, HttpStatusCode.BadRequest)
         {
         }
     }

@@ -10,9 +10,9 @@ namespace Justine.Common.Models
         public int ProductId { get; set; } // Required
 
         // Maps a class property to the sort key of the table's primary key
-        [DynamoDBRangeKey]
         private string _name = string.Empty; // Initialize to a non-null default value
-
+        
+        [DynamoDBRangeKey]
         public string Name
         {
             get => _name;

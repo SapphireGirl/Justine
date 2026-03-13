@@ -1,16 +1,19 @@
-﻿using Amazon.DynamoDBv2.DataModel;
+﻿using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
+using Amazon.DynamoDBv2.Model;
 using Justine.Common.Exceptions;
 using Justine.Common.Models;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace Justine.Common.Services
 {
     public class BasketServices : IBasketServices
     {
-        private readonly IDynamoDBContext _context;
+        private readonly IAmazonDynamoDB _context;
         private const string TableName = "Baskets";
-        public BasketServices(IDynamoDBContext context)
+        public BasketServices(IAmazonDynamoDB context)
         {
             _context = context;
         }
@@ -19,23 +22,46 @@ namespace Justine.Common.Services
         {
             try
             {
-                var basket = await _context.LoadAsync<Basket>(basketId);
-                if (basket == null)
+                var getRequest = new GetItemRequest
                 {
-                    throw new BasketException($"Basket with BasketId {basketId} not found.");
-                }
+                    TableName = TableName,
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "BasketId", new AttributeValue { N = basketId.ToString() } }
+                    }
+                };
 
-                return basket;
+                var response = await _context.GetItemAsync(getRequest);
+
+                if (response.Item.Count == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    var item = response.Item;
+                    return new Basket
+                    {
+                        BasketId = int.Parse(item["BasketId"].N),
+                        CustomerName = item["CustomerName"].S,
+                        Products = JsonConvert.DeserializeObject<List<Product>>(item["Products"].S) ?? new List<Product>(),
+                        CreatedAt = DateTime.TryParse(item["CreatedAt"].S, out var createdAt) ? createdAt : (DateTime?)null,
+                        UpdatedAt = DateTime.TryParse(item["UpdatedAt"].S, out var updatedAt) ? updatedAt : (DateTime?)null
+                    };
+                    
+                }
             }
             catch (Exception ex)
             {
+                var exceptionType = ex.GetType();
+
                 // To get the inner exception and stack trace for more detailed error information
                 if (ex.ToString() != null)
                 {
-                    throw new BasketException($"Error getting Basket with BasketId {basketId} failed: {ex.ToString()}");
+                    throw new ProductException($"Error getting Product with id {basketId} failed: Type {exceptionType} : {ex.ToString()}");
                 }
 
-                throw new BasketException($"Error getting Basket with BasketId {basketId} failed: {ex.Message}", ex);
+                throw new ProductException($"Error getting Product with id {basketId} failed: Type {exceptionType} : {ex.Message}");
             }
         }
 
@@ -43,44 +69,75 @@ namespace Justine.Common.Services
         {
             try
             {
-                var baskets = await _context.ScanAsync<Basket>(new List<ScanCondition>()).GetRemainingAsync();
-                return baskets ?? new List<Basket>();
+
+                var scanRequest = new ScanRequest
+                {
+                    TableName = TableName,
+                };
+                var response = await _context.ScanAsync(scanRequest);
+                return response.Items
+                    .Select(item => new Basket
+                    {
+                        BasketId = int.Parse(item["BasketId"].N),
+                        CustomerName = item["CustomerName"].S,
+                        Products = JsonConvert.DeserializeObject<List<Product>>(item["Products"].S) ?? new List<Product>(),
+                        CreatedAt = DateTime.TryParse(item["CreatedAt"].S, out var createdAt) ? createdAt : (DateTime?)null,
+                        UpdatedAt = DateTime.TryParse(item["UpdatedAt"].S, out var updatedAt) ? updatedAt : (DateTime?)null
+
+                    });
             }
             catch (Exception ex)
             {
+                var exceptionType = ex.GetType();
+
                 // To get the inner exception and stack trace for more detailed error information
                 if (ex.ToString() != null)
                 {
-                    throw new BasketException($"Error getting all Baskets: {ex.ToString()}");
+                    throw new BasketException($"Error getting all Products: Type {exceptionType} : {ex.ToString()}");
                 }
 
-                throw new BasketException($"Error getting all Baskets: {ex.ToString()}");
+                throw new BasketException($"Error getting all Products: Type {exceptionType} : {ex.Message}");
             }
         }
 
-        public async Task<Basket> AddBasketAsync(Basket basket)
+        public async Task<bool> AddBasketAsync(Basket basket)
         {
             try
             {
-                await _context.SaveAsync<Basket>(basket);
-                var response = await _context.LoadAsync<Basket>(basket.BasketId);
+                basket.CreatedAt = DateTime.UtcNow;
 
-                if (response == null)
+                var request = new PutItemRequest
                 {
-                    throw new BasketException($"Failed to retrieve the added Basket with BasketId {basket.BasketId}.");
-                }
+                    TableName = TableName,
+                    Item = new Dictionary<string, AttributeValue>
+                    {
+                        {"BasketId", new AttributeValue { N = basket.BasketId.ToString() } },
+                        { "CustomerName", new AttributeValue { S = basket.CustomerName } },
+                        { "Products", new AttributeValue { S = JsonConvert.SerializeObject(basket.Products) } },
+                        { "CreatedAt", new AttributeValue { S = basket.CreatedAt?.ToString("o") } },
+                        { "UpdatedAt", new AttributeValue { S = basket.UpdatedAt?.ToString("o") } } 
+                    }
+                };
 
-                return response;
+                var response = await _context.PutItemAsync(request);
+
+                return response.HttpStatusCode == HttpStatusCode.OK;
             }
             catch (Exception ex)
             {
-                var basketJson = JsonConvert.SerializeObject(basket);
+                // get type of exception
+                var exceptionType = ex.GetType();
+
+                var productJson = JsonConvert.SerializeObject(basket);
+
+                // To get the inner exception and stack trace for more detailed error information
+
                 if (ex.ToString() != null)
                 {
-                    throw new BasketException($"Error adding Basket {basketJson} \n ERROR: {ex.ToString()}");
+                    throw new BasketException($"Error adding Product {productJson} \n ERROR: Type {exceptionType} : {ex.ToString()}");
                 }
 
-                throw new BasketException($"Error adding Basket {basketJson} \n ERROR: {ex.Message}");
+                throw new BasketException($"Error adding Product {productJson} \n ERROR: Type {exceptionType} : {ex.Message}");
             }
         }
 
@@ -88,24 +145,36 @@ namespace Justine.Common.Services
         {
             try
             {
-                var basket = await _context.LoadAsync<Basket>(basketRequest.BasketId);
-                if (basket == null)
-                {
-                    throw new BasketException($"Basket with BasketId {basketRequest.BasketId} not found.");
-                }
+                basketRequest.UpdatedAt = DateTime.UtcNow;
+                var productJson = JsonConvert.SerializeObject(basketRequest);
 
-                await _context.SaveAsync(basketRequest);
-                return basketRequest;
+                var request = new PutItemRequest
+                {
+                    TableName = TableName,
+                    Item = new Dictionary<string, AttributeValue>
+                    {
+                        { "BasketId", new AttributeValue { N = basketRequest.BasketId.ToString() } },
+                        { "CustomerName", new AttributeValue { S = basketRequest.CustomerName } },
+                        { "Products", new AttributeValue { S = JsonConvert.SerializeObject(basketRequest.Products) } },
+                        { "CreatedAt", new AttributeValue { S = basketRequest.CreatedAt?.ToString("o") } },
+                        { "UpdatedAt", new AttributeValue { S = basketRequest.UpdatedAt?.ToString("o") } }
+                    }
+                };
+                var response = await _context.PutItemAsync(request);
+
+                return response.HttpStatusCode == HttpStatusCode.OK ? basketRequest : throw new ProductException($"Failed to update Product with id {basketRequest.BasketId}. HTTP Status: {response.HttpStatusCode}");
             }
             catch (Exception ex)
             {
+                var exceptionType = ex.GetType();
+
                 // To get the inner exception and stack trace for more detailed error information
                 if (ex.ToString() != null)
                 {
-                    throw new BasketException($"Error updating Basket with BasketId {basketRequest.BasketId} failed: {ex.ToString()}");
+                    throw new BasketException($"Error updating Product with id {basketRequest.BasketId} failed: Type {exceptionType}: {ex.ToString()}");
                 }
 
-                throw new BasketException($"Error updating Basket with BasketId {basketRequest.BasketId} failed: {ex.Message}");
+                throw new BasketException($"Error updating Product with id {basketRequest.BasketId} failed: Type {exceptionType}: {ex.Message}");
             }
         }
 
@@ -113,24 +182,34 @@ namespace Justine.Common.Services
         {
             try
             {
-                var basket = await _context.LoadAsync<Basket>(basketId);
-                if (basket == null)
+                var deleteRequest = new DeleteItemRequest
                 {
-                    throw new BasketException($"Basket with BasketId {basketId} not found.");
+                    TableName = TableName,
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "BasketId", new AttributeValue { N = basketId.ToString() } }
+                    },
+                    ReturnValues = "ALL_OLD" // content of deleted item will be returned in response, can be used to verify deletion
+                };
+                var response = await _context.DeleteItemAsync(deleteRequest);
+                if (response.HttpStatusCode != HttpStatusCode.OK)
+                {
+                    throw new ProductException($"Failed to delete product with id {basketId}. HTTP Status: {response.HttpStatusCode}");
                 }
 
-                await _context.DeleteAsync(basket);
                 return true;
             }
             catch (Exception ex)
             {
+                var exceptionType = ex.GetType();
+
                 // To get the inner exception and stack trace for more detailed error information
                 if (ex.ToString() != null)
                 {
-                    throw new BasketException($"Error deleting Basket with BasketId {basketId}: {ex.ToString()}");
+                    throw new ProductException($"Error deleting Product with id {basketId}: Type {exceptionType} : {ex.ToString()}");
                 }
 
-                throw new BasketException($"Error deleting Basket with BasketId {basketId}: {ex.Message}");
+                throw new ProductException($"Error deleting Product with id  {basketId}:  Type {exceptionType} : {ex.Message}");
             }
         }
 
@@ -138,23 +217,27 @@ namespace Justine.Common.Services
         {
             try
             {
-                var queryConfig = new QueryOperationConfig
+                var queryRequest = new QueryRequest
                 {
+                    TableName = TableName,
                     IndexName = "CustomerName-index",
-                    KeyExpression = new Expression
+                    KeyConditionExpression = "CustomerName = :v_customerName",
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                     {
-                        ExpressionStatement = "CustomerName = :v_customerName",
-                        ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>
-                        {
-                            { ":v_customerName", customerName }
-                        }
+                        { ":v_customerName", new AttributeValue { S = customerName } }
                     }
                 };
 
-                var search = _context.FromQueryAsync<Basket>(queryConfig);
-                var baskets = await search.GetRemainingAsync();
-
-                return baskets ?? new List<Basket>();
+                var response = await _context.QueryAsync(queryRequest);
+                return response.Items
+                    .Select(item => new Basket
+                    {
+                        BasketId = int.Parse(item["BasketId"].N),
+                        CustomerName = item["CustomerName"].S,
+                        Products = JsonConvert.DeserializeObject<List<Product>>(item["Products"].S) ?? new List<Product>(),
+                        CreatedAt = DateTime.TryParse(item["CreatedAt"].S, out var createdAt) ? createdAt : (DateTime?)null,
+                        UpdatedAt = DateTime.TryParse(item["UpdatedAt"].S, out var updatedAt) ? updatedAt : (DateTime?)null
+                    });
             }
             catch (Exception ex)
             {

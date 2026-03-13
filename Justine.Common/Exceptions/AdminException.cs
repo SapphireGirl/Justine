@@ -1,13 +1,14 @@
-﻿namespace Justine.Common.Exceptions
+﻿using System.Net;
+
+namespace Justine.Common.Exceptions
 {
-    // TODO: Add Logging
-    public class AdminException : Exception
+    public class AdminException : AppException
     {
-        public AdminException(string message) : base(message)
+        public AdminException(string message) : base(message, HttpStatusCode.BadRequest)
         {
         }
 
-        public AdminException(string message, Exception innerException) : base(message, innerException)
+        public AdminException(string message, Exception innerException) : base(message, HttpStatusCode.BadRequest)
         {
         }
     }

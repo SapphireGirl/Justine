@@ -6,11 +6,7 @@ import path from 'path';
 import child_process from 'child_process';
 import { env } from 'process';
 
-const baseFolder = './ssl/'
-//    env.APPDATA !== undefined && env.APPDATA !== ''
-//        ? `${env.APPDATA}/ASP.NET/https`
-//        : `${env.HOME}/.aspnet/https`;
-
+const baseFolder = './ssl/';
 const certificateName = "JustineClient";
 const certFilePath = path.join(baseFolder, `${certificateName}.crt`);
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
@@ -33,27 +29,14 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     child_process.execSync(`openssl pkcs12 -in ${pfxFilePath} -nocerts -nodes -out ${keyFilePath} -passin pass:${tempPass}`);
 }
 
-const pem = fs.readFileSync(certFilePath, 'utf8');
-const certMatch = pem.match(/-----BEGIN CERTIFICATE-----[\\s\\S]+?-----END CERTIFICATE-----/);
-const keyMatch  = pem.match(/-----BEGIN (?:RSA )?PRIVATE KEY-----[\\s\\S]+?-----END (?:RSA )?PRIVATE KEY-----/);
-
-console.log(`Certificate generated at: ${certFilePath}`);
-console.log(`Key generated at: ${keyFilePath}`);
-console.log('ASPNETCORE_URLS is set to: ' + env.ASPNETCORE_URLS); 
-console.log('Port: ' + env.ASPNETCORE_HTTPS_PORT); 
-
-console.log('certMatch present:', !!certMatch);
-console.log('keyMatch present:', !!keyMatch);
-if (!certMatch || !keyMatch) {
-  console.error('TLS cert or key not found or not parsed. Check ssl files and extraction.');
-}
+//const pem = fs.readFileSync(certFilePath, 'utf8');
+//const certMatch = pem.match(/-----BEGIN CERTIFICATE-----[\\s\\S]+?-----END CERTIFICATE-----/);
+//const keyMatch  = pem.match(/-----BEGIN (?:RSA )?PRIVATE KEY-----[\\s\\S]+?-----END (?:RSA )?PRIVATE KEY-----/);
 
 const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
     env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7259';
 
-// https://vitejs.dev/config/
 export default defineConfig({
-    
     plugins: [plugin()],
     resolve: {
         alias: {
@@ -62,9 +45,16 @@ export default defineConfig({
     },
     server: {
         proxy: {
+            // Proxy all /api calls to the ASP.NET backend (Vite will forward, avoiding CORS)
+            '^/api': {
+                target,
+                secure: false,     // backend local cert may be self-signed
+                changeOrigin: true // set Host header to target
+            },
             '^/login': {
                 target,
-                secure: false
+                secure: false,
+                changeOrigin: true
             }
         },
         port: 5173,
@@ -73,4 +63,4 @@ export default defineConfig({
             cert: fs.readFileSync(path.resolve(__dirname, 'ssl/JustineClient.crt'), 'utf8'),
         },
     }
-})
+});

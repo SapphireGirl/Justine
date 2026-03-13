@@ -9,15 +9,6 @@ interface AdminProps {
 }
 
 const Admin: React.FC<AdminProps> = ({ userName }) => {
-    //const invokeLambda = async (functionName: string, payload: object) => {
-
-    //    // Add the User's Id Token to the Cognito credentials login map.
-    //    // Authentication: Verigying the user's identity
-    //    // Authorization: Verifying what the user can do
-    //    // Role-based Access Control (RBAC): Users are divided into groups.  Users are able to be assigned to a group as part of their identity (authentication)
-    //    // and permissions are assigned for each groups (authorization).
-    //    // Cognito User Pools: Authentication
-    //    // Identity Pools: federated identities that are allowed to obtain temporary AWS credentials based on a specified IAM role.
 
     const lambdaClient = new LambdaClient({ region: "us-east-1" }); 
 

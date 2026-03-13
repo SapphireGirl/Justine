@@ -1,19 +1,18 @@
 ﻿using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.Model;
 using Moq;
 using Justine.Common.Models;
 using Justine.Common.Services;
-using Amazon.Runtime;
-using Amazon.DynamoDBv2.DocumentModel;
+using System.Net;
 
 namespace Justine.Common.Tests.ServicesTests
 {
     [TestFixture]
     public class ProductServicesTests
     {
-        private List<Product> _testData;
-        private Mock<IDynamoDBContext> _mockDynamoDbContext;
-        private Product expectedProduct;
+        private List<Product> _testData = null!;
+        private Mock<IAmazonDynamoDB> _mockAmazonDynamoDB = null!;
+        private Product expectedProduct = null!;
 
         [SetUp]
         public void Setup()
@@ -35,77 +34,66 @@ namespace Justine.Common.Tests.ServicesTests
                 Quantity = 1
             };
 
-            // Provide dummy AWS credentials
-            var mockCredentials = new Mock<BasicAWSCredentials>("fakeAccessKey", "fakeSecretKey");
-
-            // Create a mock AmazonDynamoDBConfig with a dummy ServiceURL
-            var mockConfig = new Mock<AmazonDynamoDBConfig>("http://localhost");
-
-            mockCredentials.Setup(x => x.GetCredentials()).Returns(mockCredentials.Object.GetCredentials());
-
-            var mockAsyncSearch = new Mock<AsyncSearch<Product>>(_testData);
-            mockAsyncSearch.Setup(x => x.GetRemainingAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_testData);
-
-            _mockDynamoDbContext = new Mock<IDynamoDBContext>();
-
-            _mockDynamoDbContext
-                .Setup(x => x.ScanAsync<Product>(It.IsAny<List<ScanCondition>>(), It.IsAny<ScanConfig>()))
-                .Returns(new MockAsyncSearch<Product>(_testData));
-
-            _mockDynamoDbContext
-                .Setup(x => x.SaveAsync(It.IsAny<Product>(), default))
-                .Returns(Task.CompletedTask);
-
-            // Mock QueryAsync to simulate GSI behavior
-            _mockDynamoDbContext
-                .Setup(x => x.FromQueryAsync<Product>(
-                        It.IsAny<QueryOperationConfig>() // Accepts the query configuration
-                ))
-                .Returns((QueryOperationConfig config) =>
-                {
-                // Simulate filtering by CustomerName (GSI behavior)
-                var Name = config.KeyExpression.ExpressionAttributeValues[":v_Name"].AsString();
-                var filteredData = _testData.Where(product => product.Name == _testData[0].Name).ToList();
-                return new MockAsyncSearch<Product>(_testData);
-            });
+            _mockAmazonDynamoDB = new Mock<IAmazonDynamoDB>(MockBehavior.Strict);
         }
 
         [TearDown]
         public void Teardown()
         {
-            // Clean up any resources if needed
-            _mockDynamoDbContext = null;
-            _testData = null;
+            _mockAmazonDynamoDB = null!;
+            _testData = null!;
         }
 
         [Test]
         public async Task GetProductByIdAsync_ShouldReturnProduct_WhenProductExists()
         {
             // Arrange
-            _mockDynamoDbContext.Setup(Setup => Setup.LoadAsync<Product>(1, default))
-                .ReturnsAsync(expectedProduct);
+            var item = new Dictionary<string, AttributeValue>
+            {
+                { "ProductId", new AttributeValue { N = expectedProduct.ProductId.ToString() } },
+                { "Name", new AttributeValue { S = expectedProduct.Name } },
+                { "Description", new AttributeValue { S = expectedProduct.Description } },
+                { "Price", new AttributeValue { N = expectedProduct.Price.ToString() } },
+                { "ImageUrl", new AttributeValue { S = expectedProduct.ImageUrl } },
+                { "Quantity", new AttributeValue { N = expectedProduct.Quantity.ToString() } },
+                { "CreatedAt", new AttributeValue { S = expectedProduct.CreatedAt?.ToString("o") ?? string.Empty } },
+                { "UpdatedAt", new AttributeValue { S = expectedProduct.UpdatedAt?.ToString("o") ?? string.Empty } }
+            };
+
+            _mockAmazonDynamoDB
+                .Setup(x => x.GetItemAsync(It.Is<GetItemRequest>(r => r.Key["ProductId"].N == "1"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new GetItemResponse { Item = item, HttpStatusCode = HttpStatusCode.OK });
+
+            var productServices = new ProductServices(_mockAmazonDynamoDB.Object);
+
             // Act
-            var productServices = new ProductServices(_mockDynamoDbContext.Object);
             var result = await productServices.GetProductByIdAsync(1);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.ProductId, Is.EqualTo(expectedProduct.ProductId));
+            Assert.That(result!.ProductId, Is.EqualTo(expectedProduct.ProductId));
             Assert.That(result.Name, Is.EqualTo(expectedProduct.Name));
+
+            _mockAmazonDynamoDB.VerifyAll();
         }
 
         [Test]
         public async Task GetProductByIdAsync_ShouldReturnNull_WhenProductDoesNotExist()
         {
             // Arrange
-            var productServices = new ProductServices(_mockDynamoDbContext.Object);
+            _mockAmazonDynamoDB
+                .Setup(x => x.GetItemAsync(It.IsAny<GetItemRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new GetItemResponse { Item = new Dictionary<string, AttributeValue>(), HttpStatusCode = HttpStatusCode.OK });
+
+            var productServices = new ProductServices(_mockAmazonDynamoDB.Object);
 
             // Act
             var result = await productServices.GetProductByIdAsync(999);
 
             // Assert
             Assert.That(result, Is.Null);
+
+            _mockAmazonDynamoDB.VerifyAll();
         }
 
         [Test]
@@ -114,84 +102,78 @@ namespace Justine.Common.Tests.ServicesTests
             // Arrange
             var newProduct = new Product
             {
-                //Id = 4,
+                ProductId = 4,
                 Name = "Product4",
                 Description = "Description4",
                 Price = 40.0M,
                 ImageUrl = "url4",
                 Quantity = 4
             };
-            newProduct.ProductId = 4; // Set the Id after saving
 
-            _mockDynamoDbContext
-                .Setup(x => x.SaveAsync(newProduct, default))
-                .Returns(Task.CompletedTask);
+            _mockAmazonDynamoDB
+                .Setup(x => x.PutItemAsync(It.IsAny<PutItemRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PutItemResponse { HttpStatusCode = HttpStatusCode.OK });
 
-            _mockDynamoDbContext.Setup(x => x.LoadAsync<Product>(newProduct.ProductId, default))
-                .ReturnsAsync(newProduct);
+            var productServices = new ProductServices(_mockAmazonDynamoDB.Object);
 
             // Act
-            // SUT is ProductServices
-            var productServices = new ProductServices(_mockDynamoDbContext.Object);
             var result = await productServices.AddProductAsync(newProduct);
 
             // Assert
-            _mockDynamoDbContext.Verify(x => x.SaveAsync(newProduct, default), Times.Once);
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.ProductId, Is.EqualTo(4));
-            Assert.That(result.Name, Is.EqualTo(newProduct.Name));
-            Assert.That(result.Description, Is.EqualTo(newProduct.Description));
-            Assert.That(result.Price, Is.EqualTo(newProduct.Price));
-            Assert.That(result.ImageUrl, Is.EqualTo(newProduct.ImageUrl));
+            Assert.That(result, Is.True);
+            _mockAmazonDynamoDB.Verify(x => x.PutItemAsync(It.IsAny<PutItemRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
         public async Task GetAllProductsAsync_ShouldReturnAllProducts()
         {
             // Arrange
-            var mockAsyncSearch = new Mock<AsyncSearch<Product>>(_testData);
+            var items = _testData.Select(p => new Dictionary<string, AttributeValue>
+            {
+                { "ProductId", new AttributeValue { N = p.ProductId.ToString() } },
+                { "Name", new AttributeValue { S = p.Name } },
+                { "Description", new AttributeValue { S = p.Description } },
+                { "Price", new AttributeValue { N = p.Price.ToString() } },
+                { "ImageUrl", new AttributeValue { S = p.ImageUrl } },
+                { "Quantity", new AttributeValue { N = p.Quantity.ToString() } },
+                { "CreatedAt", new AttributeValue { S = p.CreatedAt?.ToString("o") ?? string.Empty } },
+                { "UpdatedAt", new AttributeValue { S = p.UpdatedAt?.ToString("o") ?? string.Empty } }
+            }).ToList();
 
-            mockAsyncSearch.Setup(search => search.GetRemainingAsync(It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(_testData);
+            _mockAmazonDynamoDB
+                .Setup(x => x.ScanAsync(It.IsAny<ScanRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ScanResponse { Items = items, HttpStatusCode = HttpStatusCode.OK });
 
-            _mockDynamoDbContext
-                .Setup(x => x.ScanAsync<Product>(It.IsAny<List<ScanCondition>>()))
-                .Returns(new MockAsyncSearch<Product>(_testData));
-
+            var productServices = new ProductServices(_mockAmazonDynamoDB.Object);
 
             // Act
-            var productServices = new ProductServices(_mockDynamoDbContext.Object);
             var result = await productServices.GetAllProductsAsync();
 
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Count(), Is.EqualTo(_testData.Count));
+
+            _mockAmazonDynamoDB.VerifyAll();
         }
 
         [Test]
         public async Task DeleteProductAsync_ShouldDeleteProduct_WhenProductExists()
         {
             // Arrange
-            var productToDelete = _testData[_testData.Count - 1]; // Get the last product ID
+            var idToDelete = _testData.Last().ProductId;
 
-            var countBeforeDelete = _testData.Count;
+            _mockAmazonDynamoDB
+                .Setup(x => x.DeleteItemAsync(It.Is<DeleteItemRequest>(r => r.Key["ProductId"].N == idToDelete.ToString()), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new DeleteItemResponse { HttpStatusCode = HttpStatusCode.OK });
 
-            _mockDynamoDbContext
-                .Setup(x => x.LoadAsync<Product>(It.IsAny<int>(), default))
-                .ReturnsAsync(productToDelete);
+            var productServices = new ProductServices(_mockAmazonDynamoDB.Object);
 
-            _mockDynamoDbContext.Setup(Setup =>
-                                      Setup.DeleteAsync(It.IsAny<Product>(), default));
-            
             // Act
-            var productServices = new ProductServices(_mockDynamoDbContext.Object);
-            var result = await productServices.DeleteProductAsync(productToDelete.ProductId);
+            var result = await productServices.DeleteProductAsync(idToDelete);
 
             // Assert
-            _mockDynamoDbContext.Verify(x => x.DeleteAsync(It.IsAny<Product>(), default), Times.Once);
             Assert.That(result, Is.True);
-
-
+            _mockAmazonDynamoDB.Verify(x => x.DeleteItemAsync(It.IsAny<DeleteItemRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
@@ -207,17 +189,16 @@ namespace Justine.Common.Tests.ServicesTests
                 ImageUrl = "updatedUrl",
                 Quantity = 2
             };
-            _mockDynamoDbContext
-                .Setup(x => x.LoadAsync<Product>(updatedProduct.ProductId, default))
-                .ReturnsAsync(updatedProduct);
-            _mockDynamoDbContext.Setup(x => x.SaveAsync(updatedProduct, default))
-                .Returns(Task.CompletedTask);
-            // Act
-            // Sut is ProductServices
 
-            var productServices = new ProductServices(_mockDynamoDbContext.Object);
+            _mockAmazonDynamoDB
+                .Setup(x => x.PutItemAsync(It.Is<PutItemRequest>(req => req.Item["ProductId"].N == updatedProduct.ProductId.ToString()), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PutItemResponse { HttpStatusCode = HttpStatusCode.OK });
+
+            var productServices = new ProductServices(_mockAmazonDynamoDB.Object);
+
+            // Act
             var result = await productServices.UpdateProductAsync(updatedProduct);
-            
+
             // Assert
             Assert.That(result.ProductId, Is.EqualTo(1));
             Assert.That(result.Name, Is.EqualTo("UpdatedProduct"));
@@ -225,6 +206,8 @@ namespace Justine.Common.Tests.ServicesTests
             Assert.That(result.Price, Is.EqualTo(15.0M));
             Assert.That(result.ImageUrl, Is.EqualTo("updatedUrl"));
             Assert.That(result.Quantity, Is.EqualTo(2));
+
+            _mockAmazonDynamoDB.VerifyAll();
         }
     }
 }

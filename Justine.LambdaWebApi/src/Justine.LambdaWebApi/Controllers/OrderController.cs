@@ -52,7 +52,7 @@ namespace Justine.LambdaWebApi.Controllers
 
         // POST /Orders
         [HttpPost]
-        public async Task<Order> AddOrderAsync([FromBody] Order Order)
+        public async Task<bool> AddOrderAsync([FromBody] Order Order)
         {
             try
             {

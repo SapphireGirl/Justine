@@ -5,6 +5,112 @@ https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-10.0.102-window
 - Primary purpose: Customer-facing React application that showcases Products, Baskets, and Orders
 - Goal: Showcase the use of AWS services and the microservices pattern Saga
 
+## Install tools
+
+
+
+## Install Dependencies
+### In package json
+```
+"@aws-sdk/client-cognito-identity-provider": "^3.817.0",
+    "@aws-sdk/client-lambda": "^3.817.0",
+    "@aws-sdk/client-s3": "^3.820.0",
+    "@aws-sdk/credential-providers": "^3.823.0",
+
+	#### Use chocolatey to install
+	choco -v => 2.4.3
+
+
+	choco install pandoc
+
+	Installed correctly
+
+	pandoc for pdf generation
+	pandoc and a LaTeX engine
+
+	Install XeLaTex
+	Open bash in admin mode
+	choco install texLive
+
+	Takes a bit.
+	xelatex --version
+
+	Darn, the install hung.
+	choco install texLive --debug --verbose
+
+	texlive - texlive v2026.20260202.0 already installed.
+
+	Got the installer here 
+	https://www.tug.org/texlive/acquire-netinstall.html
+	Stopped the install, seems shakey
+
+
+
+
+
+
+
+
+```
+
+
+## Cognito User Pool and Identity Pool
+### User pools: authentication engine
+Taken from: https://www.datacamp.com/tutorial/aws-cognito-guide
+
+User pools serve as what I consider the authentication engine within AWS Cognito, 
+handling all aspects of user registration, 
+sign-in, and profile management. 
+They maintain user directories and provide authentication services for applications, 
+supporting multiple authentication methods including traditional username/password combinations, 
+social identity providers, and SAML-based enterprise identity systems.
+
+### Identity pools: authorization broker
+Identity pools function as what I call authorization brokers, 
+translating authenticated user identities into temporary AWS credentials. 
+Unlike user pools, they do not store user information. 
+Instead, they focus on providing controlled access to AWS resources based 
+on verified identities from various sources.
+
+### STS: Security Token Service
+The core function of identity pools is to provide temporary AWS credentials via the AWS Security Token Service (STS). 
+These credentials have limited lifespans and specific permissions, 
+following the principle of least privilege. This approach ensures that users and applications 
+only have access to the resources they need for their current operations.
+What I particularly appreciate about identity pools is how they excel at mapping identities to IAM roles 
+through attribute-based rules. This mapping can be based on user attributes, group memberships, 
+or other contextual information. The flexibility of this system allows 
+for sophisticated authorization schemes that can adapt to different user types and access requirements.
+
+## User pools vs identity pools
+
+•	User pools manage authentication, verifying who the user is. They are ideal for scenarios that require user registration, sign-in workflows, profile management, and integration with external identity providers.
+•	Identity pools manage authorization, determining what the user can access. They are used to assign AWS resource access to authenticated users, whether those users come from AWS Cognito user pools or external providers.
+
+## Using JWT tokens for authentication and authorization
+
+The typical authentication workflow begins with user registration, 
+where users provide required information and verify their identities through email or SMS confirmation. 
+You can customize this process to include additional verification steps 
+or integration with external identity systems.
+Next is the sign-in process, which involves verifying user credentials against the user pool. 
+Upon successful authentication, AWS Cognito issues JSON Web Tokens (JWTs) containing user information. 
+These tokens can be used to access protected resources and services. 
+Tokens have configurable expiration times and can be refreshed to maintain user sessions 
+without requiring reauthentication.
+Once users are authenticated, session management becomes crucial to ensure they remain authenticated 
+as they interact with the application. AWS Cognito provides built-in mechanisms for token refresh, 
+session invalidation, and secure logout. 
+Effective session management enhances security while supporting seamless user experiences.
+
+### Auditing and monitoring
+AWS Cognito integrates with AWS CloudTrail and Amazon CloudWatch 
+to provide comprehensive auditing and monitoring capabilities.
+CloudTrail logs all API calls made to AWS Cognito, allowing you to track user activities,
+monitor authentication events, and identify potential security issues.
+CloudWatch provides real-time monitoring of AWS Cognito metrics, such as sign-in attempts,
+failed authentication events, and user pool performance.
+
 ## IAM Groups and Roles
 
 ### Saga Pattern
