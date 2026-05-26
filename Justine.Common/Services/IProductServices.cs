@@ -6,6 +6,7 @@ namespace Justine.Common.Services
     {
         Task<Product?> GetProductByIdAsync(int id);
         Task<IEnumerable<Product>> GetAllProductsAsync();
+        Task<IEnumerable<Product>> GetAllMockProductsAsync();
         Task<bool> AddProductAsync(Product product);
         Task<Product> UpdateProductAsync(Product product);
         Task<bool> DeleteProductAsync(int id);

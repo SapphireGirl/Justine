@@ -18,6 +18,7 @@ This document provides comprehensive documentation for the Terraform infrastruct
 - **DynamoDB**: NoSQL database for Products, Baskets, and Orders
 - **API Gateway**: HTTP API for Lambda integration
 - **IAM Roles**: Security and permissions management
+- Injectable react services for API communication
 
 ## Directory Structure
 ```

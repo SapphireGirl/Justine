@@ -10,21 +10,25 @@ const Login: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
-    const passwordFromUI = password; 
-    console.log("Password from UI:", passwordFromUI);
-
+    // Removed logging from render (renders happen frequently, especially in StrictMode)
+    // Only log minimal non-sensitive info in development when submitting.
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
         try {
+            // Debug-only: do not log the actual password. Log only length/occurrence.
+            if (import.meta.env.DEV) {
+                console.debug("Submitting login for user:", username, "passwordLength:", password.length);
+            }
+
             const resp = await fetch('/api/Auth/Login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include', // allow HttpOnly cookie set by backend (recommended)
                 body: JSON.stringify({
                     username,
-                    password: passwordFromUI
+                    password
                 })
             });
 

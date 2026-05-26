@@ -54,7 +54,7 @@ namespace Justine.Common.Services
                 var productJson = JsonConvert.SerializeObject(product);
 
                 // To get the inner exception and stack trace for more detailed error information
-                
+
                 if (ex.ToString() != null)
                 {
                     throw new ProductException($"Error adding Product {productJson} \n ERROR: Type {exceptionType} : {ex.ToString()}");
@@ -67,7 +67,7 @@ namespace Justine.Common.Services
         public async Task<bool> DeleteProductAsync(int id)
         {
             try
-            { 
+            {
                 var deleteRequest = new DeleteItemRequest
                 {
                     TableName = TableName,
@@ -82,7 +82,7 @@ namespace Justine.Common.Services
                 {
                     throw new ProductException($"Failed to delete product with id {id}. HTTP Status: {response.HttpStatusCode}");
                 }
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -191,7 +191,7 @@ namespace Justine.Common.Services
                 }
 
                 throw new ProductException($"Error getting Product with id {id} failed: Type {exceptionType} : {ex.Message}");
-            }   
+            }
         }
 
         public async Task<Product> UpdateProductAsync(Product productRequest)
@@ -332,5 +332,52 @@ namespace Justine.Common.Services
                 throw new ProductException($"Error creating table {tableName}: {ex.Message}");
             }
         }
+
+
+        // UI Mocks
+        #region UI Mocks
+
+        public async Task<IEnumerable<Product>> GetAllMockProductsAsync()
+        {
+            List<Product> mockProducts = new List<Product>
+            {
+                new Product
+                {
+                    ProductId = 1,
+                    Name = "Mock Product 1",
+                    Description = "This is a description for Mock Product 1.",
+                    Price = 9.99m,
+                    ImageUrl = "https://example.com/images/mock-product-1.jpg",
+                    Quantity = 100,
+                    CreatedAt = DateTime.UtcNow.AddDays(-10),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-5)
+                },
+                new Product
+                {
+                    ProductId = 2,
+                    Name = "Mock Product 2",
+                    Description = "This is a description for Mock Product 2.",
+                    Price = 19.99m,
+                    ImageUrl = "https://example.com/images/mock-product-2.jpg",
+                    Quantity = 200,
+                    CreatedAt = DateTime.UtcNow.AddDays(-20),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-10)
+                },
+                new Product
+                {
+                    ProductId = 3,
+                    Name = "Mock Product 3",
+                    Description = "This is a description for Mock Product 3.",
+                    Price = 29.99m,
+                    ImageUrl = "https://example.com/images/mock-product-3.jpg",
+                    Quantity = 300,
+                    CreatedAt = DateTime.UtcNow.AddDays(-30),
+                    UpdatedAt = DateTime.UtcNow.AddDays(-15)
+                }
+            };
+            return await Task.FromResult(mockProducts);
+
+        }
+        #endregion
     }
 }
