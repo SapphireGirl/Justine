@@ -24,7 +24,9 @@ namespace Justine.LambdaWebApi.Controllers
         {
             try
             {
-                var products = await _productServices.GetAllProductsAsync();
+                //var products = await _productServices.GetAllProductsAsync();
+                var products = await _productServices.GetAllMockProductsAsync();
+
                 return Ok(products ?? Enumerable.Empty<Product>());
             }
             catch (ResourceNotFoundException resourceNotFoundException)

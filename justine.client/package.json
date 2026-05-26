@@ -1,12 +1,14 @@
 {
   "name": "justine.client",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "start": "vite",
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "vitest",
+    "test:ci": "vitest --run",
     "postbuild": "bash ./scripts/publish_wwwroot.sh",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -17,6 +19,10 @@
     "@aws-sdk/client-lambda": "^3.817.0",
     "@aws-sdk/client-s3": "^3.820.0",
     "@aws-sdk/credential-providers": "^3.823.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.6.1",
@@ -24,6 +30,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/aws-sdk": "^0.0.42",
     "@types/node": "^22.14.0",
     "@types/react": "^19.0.10",
@@ -35,8 +44,10 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "jsdom": "^29.0.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",
-    "vite": "^6.3.1"
+    "vite": "^6.3.1",
+    "vitest": "^4.1.0"
   }
 }

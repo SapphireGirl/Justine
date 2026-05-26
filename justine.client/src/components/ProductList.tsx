@@ -1,6 +1,25 @@
 ﻿import { useEffect, useState } from "react";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
+import {
+    AppBar,
+    Toolbar,
+    Container,
+    Card,
+    CardMedia,
+    CardContent,
+    Typography,
+    CardActions,
+    Button,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Box,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Grid from '@mui/material/Grid';
+// css
+import '../App.css';
 
 interface Product {
     ProductId: number;
@@ -60,31 +79,23 @@ const ProductList = () => {
             transition: Bounce,
         });
 
-        // if User is Justine, show admin button. This is a placeholder for real auth logic.
-        // Justine should be able to see the admin button and access the admin page, while others should not.
-
         const fetchProducts = async () => {
             setLoading(true);
             setError(null);
 
-            // Read Vite env safely and use a robust fallback when it's not set.
-            // Prefer VITE_API_BASE if provided; otherwise fall back to the current origin
-            // so requests target the same host that served the app (avoids empty base producing wrong URL).
             const rawApiBase = (import.meta as unknown as { env?: { VITE_API_BASE?: string } }).env?.VITE_API_BASE;
             const apiBase = typeof rawApiBase === "string" && rawApiBase.length > 0
                 ? rawApiBase.replace(/\/$/, "")
                 : window.location.origin.replace(/\/$/, "");
-            const url = `${apiBase}/api/products`;
+            const productsUrl = `${apiBase}/api/products`;
 
             try {
-                const resp = await fetch(url, {
+                const resp = await fetch(productsUrl, {
                     method: "GET",
                     headers: { Accept: "application/json" },
-                    // Use cookie-based auth (HttpOnly cookies) rather than storing tokens in storage
                     credentials: "include"
                 });
 
-                // explicit handling for auth/status codes we care about
                 if (resp.status === 401 || resp.status === 403) {
                     setProducts([]);
                     setError("Not authenticated. Please sign in.");
@@ -96,8 +107,8 @@ const ProductList = () => {
                     return;
                 }
 
-                // Treat 400/404 from server as "table missing / no products" first-run UX
                 if (resp.status === 400 || resp.status === 404) {
+                    // treat as first-run: table missing or empty
                     setProducts([]);
                     setError(null);
                     toast.info("Products table missing or empty. Use Admin to create/seed data.", { position: "top-center", transition: Bounce });
@@ -108,14 +119,11 @@ const ProductList = () => {
                     const text = await resp.text().catch(() => "");
                     setProducts([]);
                     setError(`Server returned ${resp.status}: ${text || resp.statusText}`);
-                    //toast.error("Failed to fetch products.", { position: "top-center", transition: Bounce });
                     return;
                 }
 
-                // parse as unknown and validate without `any`
                 const payload: unknown = await resp.json().catch(() => null);
 
-                // Normalize payload into Product[] using the Product interface
                 let candidates: Record<string, unknown>[] = [];
                 if (Array.isArray(payload)) {
                     candidates = payload.filter(isObject);
@@ -128,7 +136,6 @@ const ProductList = () => {
                 const normalized: Product[] = candidates
                     .filter(hasProductIdentifier)
                     .map((it) => {
-                        // --- CHANGED: produce fields that match Product.cs / Product interface ---
                         const id = toNumber(it["ProductId"] ?? it["productId"] ?? it["id"] ?? 0);
                         const name = toString(it["Name"] ?? it["name"] ?? "");
                         const description = toString(it["Description"] ?? it["description"] ?? "") || null;
@@ -155,7 +162,6 @@ const ProductList = () => {
                 console.error("Fetch products error:", err);
                 setProducts([]);
                 setError("Failed to fetch products. See console for details.");
-                //toast.error("Failed to fetch products.", { position: "top-center", transition: Bounce });
             } finally {
                 setLoading(false);
             }
@@ -165,56 +171,92 @@ const ProductList = () => {
         setUserName("justine");
     }, []);
 
-    // case-insensitive admin check
     const isAdmin = userName?.toLowerCase() === "justine";
-
-    // show admin button only when user is admin, loading finished, no server error, and no products
     const shouldShowAdmin = isAdmin && !loading && !error && products.length === 0;
 
     return (
-        <div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <ToastContainer position="top-center" autoClose={3000} transition={Bounce} />
-            <h1>Product List</h1>
 
-            {/* Show loading / error inline but keep page visible */}
-            {loading && <p>Loading products...</p>}
-            {error && (
-                <div role="alert" style={{ color: "darkred", marginBottom: 12 }}>
-                    <strong>{error}</strong>
-                </div>
-            )}
+            {/* Header */}
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                        Products
+                    </Typography>
+                    {shouldShowAdmin && (
+                        <Button color="inherit" onClick={() => navigate("/admin")}>Admin</Button>
+                    )}
+                </Toolbar>
+            </AppBar>
 
-            {/* Admin button only visible when there are no products and no server error */}
-            {shouldShowAdmin && (
-                <div style={{ marginBottom: 12 }}>
-                    <div style={{ marginTop: 6 }}>
-                        <small>If the table is missing or empty, use Admin to create/seed data.</small>
-                    </div>
-                    <button
-                        aria-label="Go to Admin"
-                        onClick={() => navigate("/admin")}
-                    >
-                        Admin
-                    </button>
+            {/* Main content */}
+            <Container component="main" sx={{ py: 4, flexGrow: 1 }}>
+                {loading && <Typography>Loading products...</Typography>}
+                {error && (
+                    <Box role="alert" sx={{ mb: 2 }}>
+                        <Typography color="error">{error}</Typography>
+                    </Box>
+                )}
 
-                </div>
-            )}
+                <Grid container spacing={3}>
+                    {products.length === 0 && !loading && !error && (
+                        <Grid key="no-products" size={{ xs: 12, sm: 6, md: 4 }}>
+                            <Typography>No products available.</Typography>
+                        </Grid>
+                    )}
 
-            {(!loading && products.length === 0 && !error) && <p>No products available.</p>}
-
-            {products.length > 0 && (
-                <ul>
                     {products.map((product) => (
-                        <li key={product.ProductId}>
-                            <h2>{product.Name}</h2>
-                            <p>{product.Description}</p>
-                            <p>Price: ${product.Price}</p>
-                            <p>Quantity: {product.Quantity}</p>
-                        </li>
+                        <Grid key={product.ProductId ?? `${product.Name}-${Math.random()}`} size={{ xs: 12, sm: 6, md: 4 }}>
+                            <Accordion>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                        <Typography variant="subtitle1">{product.Name}</Typography>
+                                        <Typography variant="subtitle2">${product.Price.toFixed(2)}</Typography>
+                                    </Box>
+                                </AccordionSummary>
+
+                                <AccordionDetails>
+                                    <Card variant="outlined" sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        {product.ImageUrl ? (
+                                            <CardMedia
+                                                component="img"
+                                                image={product.ImageUrl}
+                                                alt={product.Name}
+                                                sx={{ height: 180, objectFit: 'contain' }}
+                                            />
+                                        ) : null}
+                                        <CardContent>
+                                            <Typography variant="h6">{product.Name}</Typography>
+                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                                {product.Description || "No description"}
+                                            </Typography>
+                                            <Typography variant="body2">Quantity: {product.Quantity}</Typography>
+                                            <Typography variant="body2">Price: ${product.Price.toFixed(2)}</Typography>
+                                            {product.CreatedAt && <Typography variant="caption" display="block">Created: {product.CreatedAt}</Typography>}
+                                            {product.UpdatedAt && <Typography variant="caption" display="block">Updated: {product.UpdatedAt}</Typography>}
+                                        </CardContent>
+                                        <CardActions>
+                                            <Button size="small" onClick={() => navigate(`/products/${product.ProductId}`)}>View</Button>
+                                            <Button size="small" onClick={() => toast.info("Add to basket not implemented")}>Add to Basket</Button>
+                                        </CardActions>
+                                    </Card>
+                                </AccordionDetails>
+                            </Accordion>
+                        </Grid>
                     ))}
-                </ul>
-            )}
-        </div>
+                </Grid>
+            </Container>
+
+            {/* Footer */}
+            <Box component="footer" sx={{ py: 2, textAlign: 'center', bgcolor: 'background.paper' }}>
+                <Container maxWidth="md">
+                    <Typography variant="body2" color="text.secondary">
+                        © {new Date().getFullYear()} Justine Store — Demo
+                    </Typography>
+                </Container>
+            </Box>
+        </Box>
     );
 };
 
