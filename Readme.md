@@ -1,4 +1,6 @@
-﻿# Introduction
+﻿# React Application
+
+# Introduction
 ## Upgraded from .NET Core 8 to 10.0.102
 https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-10.0.102-windows-x64-installer
 ## Brief overview of the project and its goals
